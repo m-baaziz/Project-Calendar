@@ -67,6 +67,12 @@ public:
     unsigned int getHours() const {
         return minutes/60;
     }
+    /*!
+     * \brief display
+     * \param f text stream (ex: std::cout)
+     * 
+     * Display the duration using "hh H mm" format
+     */
     void display(QTextStream& f) const;
 };
 
