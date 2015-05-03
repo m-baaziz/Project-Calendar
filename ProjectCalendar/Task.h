@@ -120,37 +120,85 @@ public:
 
 
 class TaskManager {
-    Task** tasks;
-    unsigned int nb;
-    unsigned int max;
+    /*!
+     * \brief tasks
+     * This array of task addresses is unique and shared with anyother other
+       TaskManager. It holds the addresses of all the tasks, no matter its
+       type.
+     */
+    static Task** tasks;
+    static unsigned int nbTasks;
+    static unsigned int maxTasks;
     QString file;
 
     void addItem(Task* t);
     Task* findTask(const QString& id) const;
     TaskManager();
-    ~TaskManager();
+    virtual ~TaskManager();
     TaskManager(const TaskManager& tm);
     TaskManager& operator=(const TaskManager& tm);
 
     struct Handler {
         TaskManager* instance;
         Handler():instance(0){}
-        ~Handler(){if (instance) delete instance;}
+        ~Handler(){if (instance) instance;}
     };
     static Handler handler;
 
 public:
     static TaskManager& getInstance();
-    static void libererInstance();
-    UnitaryTask& addUnitaryTask(const QString& id, const QString& t, const Duration& dur, const QDate& dispo, const QDate& term,bool preempt = false);
-    CompositeTask& addCompositeTask(const QString& id, const QString& t, const Duration& dur, const QDate& dispo, const QDate& term);
+    static void freeInstance();
+    virtual Task& addTask(const QString& id, const QString& t, const Duration& dur, const QDate& dispo, const QDate& term)=0;
     Task& getTask(const QString& id);
     const Task& getTask(const QString& id) const;    // so that it could be used in const methods that shouldn't modify the task
     bool isTaskHere(const QString& id) const {return findTask(id) != 0;}
     void load(const QString& f);
     void save(const QString& f);
 
+    // ITERATORS
+
+    class Iterator {
+
+    protected:
+        Task** currentTask;
+        unsigned int remaining;
+
+        Iterator(Task** t, unsigned int nb) : currentTask(t), remaining(nb){}
+
+        friend class TaskManager;
+
+    public:
+        Iterator() : currentTask(0), remaining(0){}
+        bool isDone() const { return remaining==0;}
+        void next() {
+            if (isDone()) throw CalendarException("Error : next on a finished iterator");
+            remaining--;
+            currentTask++;
+        }
+        Task& current() const {
+            if (isDone()) throw CalendarException("Error, indirection on a finished iterator");
+            return **currentTask;
+        }
+
+    };
+
+    Iterator getIterator() {return Iterator(tasks,nbTasks);}
+    virtual specificCurrent() const = 0;
+
+    class specificIterator : public Iterator {
+        specificIterator(Task** t, unsigned int nb) : currentTask(t), remaining(nb) {};
+        friend class TaskManager;
+
+    public:
+        Task& current() const{
+            specificCurrent();
+        }
+    };
+
+    specificIterator getSpecificIterator() {return specificIterator(tasks,nbTasks);}
+
     /* TO DO :
+     * Add factories (virtual unitary factory) -> preemptive factory and nonpreemptive factory, and composite factory
      * Add iterators declarations,
      * Define in Task.cpp all the functions
      * Think about new functions that could be usefull
