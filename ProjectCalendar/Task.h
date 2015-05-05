@@ -9,7 +9,7 @@
 
 /*!
  * \brief The Task class
-   Its birth and death are managed only by the TaskManager.
+   Its birth and death are managed only by the TaskFactory.
  */
 class Task{
     QString identifier;
@@ -26,7 +26,7 @@ class Task{
     virtual ~Task(){}
     virtual void setTaskType() = 0;
 
-    friend class TaskManger;
+    friend class TaskFactory;
 
 public:
     QString getId() const {return identifier;}
@@ -57,7 +57,7 @@ class UnitaryTask: public Task {
     virtual void setPreemptive() = 0;
     void setTaskType(){tasktype = UNITARY;}
 
-    friend class TaskManager;
+    friend class TaskFactory;
 
 public:
     bool isPreemptive() const {return preemptive;}
@@ -72,7 +72,7 @@ class PreemptiveTask: public UnitaryTask {
     ~PreemptiveTask(){}
     void setPreemptive() {preemptive = true;}
 
-    friend class TaskManager;
+    friend class TaskFactory;
 
 public:
     void setInterruption();
@@ -86,7 +86,7 @@ class NonPreemptiveTask: public UnitaryTask {
     ~NonPreemptiveTask(){}
     void setPreemptive() {preemptive = false;}
 
-    friend class TaskManager;
+    friend class TaskFactory;
 };
 
 class CompositeTask: public Task {
@@ -99,7 +99,7 @@ class CompositeTask: public Task {
     ~CompositeTask(){}
     void setTaskType(){tasktype = COMPOSITE;}
 
-    friend class TaskManager;
+    friend class TaskFactory;
 
 public:
     /*!
@@ -110,7 +110,7 @@ public:
     void addSubTask(const Task& t);
     /*!
      * \brief removeSubTask
-     * this method destroys the subtask using TaskManager::removeTask method
+     * this method destroys the subtask using TaskFactory::removeTask method
        and updates the composite-task's array of subtasks
      */
     void removeSubTask(const Task& t);
@@ -119,34 +119,36 @@ public:
 
 
 
-class TaskManager {
+class TaskFactory {
     /*!
      * \brief tasks
      * This array of task addresses is unique and shared with anyother other
-       TaskManager. It holds the addresses of all the tasks, no matter its
+       TaskFactory. It holds the addresses of all the tasks, no matter its
        type.
      */
     static Task** tasks;
     static unsigned int nbTasks;
     static unsigned int maxTasks;
+    static unsigned int golbalKey;
+    unsigned int localKey;
     QString file;
 
     void addItem(Task* t);
     Task* findTask(const QString& id) const;
-    TaskManager();
-    virtual ~TaskManager();
-    TaskManager(const TaskManager& tm);
-    TaskManager& operator=(const TaskManager& tm);
+    TaskFactory();
+    virtual ~TaskFactory();
+    TaskFactory(const TaskFactory& tm);
+    TaskFactory& operator=(const TaskFactory& tm);
 
     struct Handler {
-        TaskManager* instance;
+        TaskFactory** instances; // implement dynamic array
         Handler():instance(0){}
-        ~Handler(){if (instance) instance;}
+        ~Handler(){if (instance) delete[] instance;}
     };
     static Handler handler;
 
 public:
-    static TaskManager& getInstance();
+    //static TaskFactory& getInstance();  à redéfinir sur chaque Factory
     static void freeInstance();
     virtual Task& addTask(const QString& id, const QString& t, const Duration& dur, const QDate& dispo, const QDate& term)=0;
     Task& getTask(const QString& id);
@@ -165,7 +167,7 @@ public:
 
         Iterator(Task** t, unsigned int nb) : currentTask(t), remaining(nb){}
 
-        friend class TaskManager;
+        friend class TaskFactory;
 
     public:
         Iterator() : currentTask(0), remaining(0){}
@@ -186,8 +188,8 @@ public:
     virtual specificCurrent() const = 0;
 
     class specificIterator : public Iterator {
-        specificIterator(Task** t, unsigned int nb) : currentTask(t), remaining(nb) {};
-        friend class TaskManager;
+        specificIterator(Task** t, unsigned int nb) : currentTask(t), remaining(nb) {}
+        friend class TaskFactory;
 
     public:
         Task& current() const{
@@ -203,6 +205,24 @@ public:
      * Define in Task.cpp all the functions
      * Think about new functions that could be usefull
     */
+
+};
+
+class CompositeFactory : public TaskFactory {
+    static Handler compositeHandler;
+    Handler& getStaticVar() const {return compositeHandler;}
+
+};
+
+class UnitaryFactory : public TaskFactory {
+
+};
+
+class PreemptiveFactory : public UnitaryFactory {
+
+};
+
+class NonPreemptiveFactory : public UnitaryFactory {
 
 };
 
