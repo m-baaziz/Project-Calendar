@@ -6,26 +6,34 @@
  * \file Task.h
  * \brief Header file that describes the classes related with Tasks Management
  */
+/*!
+ * \brief The TaskType enum
+ * Global type declaration so that it can be used by every Task.h's Class.
+   This Type enumerates the main Task types.
+ */
+enum TaskType {UNITARY, COMPOSITE};
+enum UnitarySubTypes {PREEMPTIVE, NOT_PREEMPTIVE};
 
 /*!
  * \brief The Task class
    Its birth and death are managed only by the TaskFactory.
  */
-class Task{
+class Task{ 
+    Task(const Task& t);
+    Task& operator=(const Task& t);
+protected:
+    Task(const QString& id, const QString& t, const Duration& dur, const QDate& dispo, const QDate& term):
+        identifier(id), title(t), duration(dur), disponibility(dispo), deadline(term), taskType(UNITARY){setTaskType();}
+    virtual ~Task(){}
+    virtual void setTaskType() = 0;
     QString identifier;
     QString title;
     Duration duration;
     QDate disponibility;
     QDate deadline;
-    enum TaskType {UNITARY, COMPOSITE} tasktype;
+    enum TaskType taskType;
 
-    Task(const QString& id, const QString& t, const Duration& dur, const QDate& dispo, const QDate& term):
-        identifier(id), title(t), duration(dur), disponibility(dispo), deadline(term), tasktype(UNITARY){setTaskType();}
-    Task(const Task& t);
-    Task& operator=(const Task& t);
-    virtual ~Task(){}
-    virtual void setTaskType() = 0;
-
+    template<class T,class F>
     friend class TaskFactory;
 
 public:
@@ -34,10 +42,7 @@ public:
     Duration getDuration() const {return duration;}
     QDate getDisponibility() const {return disponibility;}
     QDate getDeadline() const {return deadline;}
-    QString getTaskType() const {
-        if (tasktype == COMPOSITE) return "composite";
-        else return "unitary";
-    }
+    enum TaskType getTaskType() const {return taskType;}
 
     void setId(const QString& id) {identifier=id;}
     void setTitle(const QString& t) {title=t;}
@@ -46,59 +51,73 @@ public:
     void setDeadline(const QDate& date) {deadline=date;}
 };
 
-class UnitaryTask: public Task {
-    bool preemptive;
+typedef std::vector<Task*> TasksContainer;
 
-    UnitaryTask(const QString& id, const QString& t, const Duration& dur, const QDate& dispo, const QDate& term):
-        Task(id,t,dur,dispo,term), preemptive(true){setPreemptive();}
+
+class UnitaryTask: public Task {
     UnitaryTask(const UnitaryTask& t);
     UnitaryTask& operator=(const UnitaryTask& t);
+protected:
+    UnitaryTask(const QString& id, const QString& t, const Duration& dur, const QDate& dispo, const QDate& term):
+        Task(id,t,dur,dispo,term), subType(NOT_PREEMPTIVE){setPreemptive();}
     virtual ~UnitaryTask(){}
+    void setTaskType(){taskType = UNITARY;}
+    enum UnitarySubTypes subType;
     virtual void setPreemptive() = 0;
-    void setTaskType(){tasktype = UNITARY;}
 
+    template<class T,class F>
     friend class TaskFactory;
 
 public:
-    bool isPreemptive() const {return preemptive;}
-
+    virtual bool isPreemptive() const=0;
+    enum UnitarySubTypes getUnitarySubType() const {return subType;}
 };
 
 class PreemptiveTask: public UnitaryTask {
-    PreemptiveTask(const QString& id, const QString& t, const Duration& dur, const QDate& dispo, const QDate& term):
-        UnitaryTask(id,t,dur,dispo,term){}
     PreemptiveTask(const PreemptiveTask& t);
     PreemptiveTask& operator=(const PreemptiveTask& t);
-    ~PreemptiveTask(){}
-    void setPreemptive() {preemptive = true;}
+protected:
+    PreemptiveTask(const QString& id, const QString& t, const Duration& dur, const QDate& dispo, const QDate& term):
+        UnitaryTask(id,t,dur,dispo,term){}
+    virtual ~PreemptiveTask();
+    void setPreemptive() {subType = PREEMPTIVE;}
 
+    template<class T,class F>
     friend class TaskFactory;
-
 public:
+    bool isPreemptive() const {return true;}
     void setInterruption();
 };
 
 class NonPreemptiveTask: public UnitaryTask {
-    NonPreemptiveTask(const QString& id, const QString& t, const Duration& dur, const QDate& dispo, const QDate& term):
-        UnitaryTask(id,t,dur,dispo,term){}
     NonPreemptiveTask(const NonPreemptiveTask& t);
     NonPreemptiveTask& operator=(const PreemptiveTask& t);
-    ~NonPreemptiveTask(){}
-    void setPreemptive() {preemptive = false;}
+protected:
+    NonPreemptiveTask(const QString& id, const QString& t, const Duration& dur, const QDate& dispo, const QDate& term):
+        UnitaryTask(id,t,dur,dispo,term){}
+    virtual ~NonPreemptiveTask();
+    void setPreemptive() {subType = NOT_PREEMPTIVE;}
 
+    template<class T,class F>
     friend class TaskFactory;
+public:
+    bool isPreemptive() const {return false;}
 };
 
+
 class CompositeTask: public Task {
-    Task** subTasks;
+    CompositeTask(const CompositeTask& t);
+    CompositeTask& operator=(const CompositeTask& t);
+protected:
+    TasksContainer subTasks;
 
     CompositeTask(const QString& id, const QString& t, const Duration& dur, const QDate& dispo, const QDate& term):
         Task(id,t,dur,dispo,term){}
-    CompositeTask(const CompositeTask& t);
-    CompositeTask& operator=(const CompositeTask& t);
-    ~CompositeTask(){}
-    void setTaskType(){tasktype = COMPOSITE;}
+    virtual ~CompositeTask(); //ask CompositeFactory to destroy the subTasks
+    void setTaskType(){taskType = COMPOSITE;}
+    TasksContainer getSubTasksArray() const {return subTasks;}
 
+    template<class T,class F>
     friend class TaskFactory;
 
 public:
@@ -107,123 +126,201 @@ public:
      * the subtask has to be created before, this method only adds the address
        of this task in the array of subTasks.
      */
-    void addSubTask(const Task& t);
+    void addSubTask(Task& t);
     /*!
      * \brief removeSubTask
      * this method destroys the subtask using TaskFactory::removeTask method
        and updates the composite-task's array of subtasks
      */
-    void removeSubTask(const Task& t);
+    void removeSubTask(const QString& id);
     Task& getSubTask(const QString& id);
+    bool isSubTaskHere(const QString& id) const;
 };
 
 
-
+template<class T, class F>
 class TaskFactory {
+    TaskFactory(const TaskFactory& tf);
+    TaskFactory& operator=(const TaskFactory& tf);
+protected:
+    TaskFactory(){}
     /*!
      * \brief tasks
      * This array of task addresses is unique and shared with anyother other
        TaskFactory. It holds the addresses of all the tasks, no matter its
        type.
      */
-    static Task** tasks;
-    static unsigned int nbTasks;
-    static unsigned int maxTasks;
-    static unsigned int golbalKey;
-    unsigned int localKey;
+    static TasksContainer tasks;
+
     QString file;
 
     void addItem(Task* t);
-    Task* findTask(const QString& id) const;
-    TaskFactory();
+    T* findTask(const QString& id) const {
+        for (TasksContainer::const_iterator it = tasks.begin(); it != tasks.end(); ++it)
+            if ((*it)->getId()==id) return *it;
+        return 0;
+    }
+
+    virtual enum TaskType specificTaskType() const = 0;
     virtual ~TaskFactory();
-    TaskFactory(const TaskFactory& tm);
-    TaskFactory& operator=(const TaskFactory& tm);
 
     struct Handler {
-        TaskFactory** instances; // implement dynamic array
-        Handler():instance(0){}
+        TaskFactory<T,F>* instance;
+        Handler():instance(0) {}
         ~Handler(){if (instance) delete[] instance;}
     };
     static Handler handler;
-
 public:
-    //static TaskFactory& getInstance();  à redéfinir sur chaque Factory
+    static F& getInstance() {
+        if (handler.instance==0) handler.instance = new F;
+        return *(handler.instance);
+    }
+
     static void freeInstance();
-    virtual Task& addTask(const QString& id, const QString& t, const Duration& dur, const QDate& dispo, const QDate& term)=0;
-    Task& getTask(const QString& id);
-    const Task& getTask(const QString& id) const;    // so that it could be used in const methods that shouldn't modify the task
+    T& addTask(const QString& id, const QString& t, const Duration& dur, const QDate& dispo, const QDate& term) {
+        if (isTaskHere(id)) throw CalendarException("Error : Task "+id+" already added");
+        T* to_add = new T(id,t,dur,dispo,term);
+        tasks.push_back(to_add);
+        return *to_add;
+    }
+
+    T& getTask(const QString& id) {
+        T* to_send = findTask(id);
+        if (!to_send) throw CalendarException("Error : Task "+id+" not found");
+        return *to_send;
+    }
+
+    const T& getTask(const QString& id) const { // so that it could be used in const methods that shouldn't modify the task
+        return const_cast<T>(getTask(id));
+    }
+
     bool isTaskHere(const QString& id) const {return findTask(id) != 0;}
     void load(const QString& f);
     void save(const QString& f);
+    void removeTask(Task* t);
 
     // ITERATORS
 
-    class Iterator {
-
+    /*!
+     * \brief The TasksIterator class
+     * This is a global Iterator shared by every Task Factory. It makes
+       iterating on the whole set of tasks possible from any Task Factory.
+     */
+    class TasksIterator {
     protected:
-        Task** currentTask;
-        unsigned int remaining;
-
-        Iterator(Task** t, unsigned int nb) : currentTask(t), remaining(nb){}
-
+        TasksIterator(TasksContainer t) : currentTask(t){}
+        TasksContainer currentTask;
         friend class TaskFactory;
-
     public:
-        Iterator() : currentTask(0), remaining(0){}
-        bool isDone() const { return remaining==0;}
-        void next() {
+        TasksIterator() : currentTask(0){}
+        bool isDone() const { return currentTask.size()==0;}
+        virtual void next();/* {
             if (isDone()) throw CalendarException("Error : next on a finished iterator");
-            remaining--;
-            currentTask++;
-        }
+            currentTask.pop_back();
+        }*/
         Task& current() const {
             if (isDone()) throw CalendarException("Error, indirection on a finished iterator");
-            return **currentTask;
+            return *currentTask[currentTask.size()];
         }
 
     };
 
-    Iterator getIterator() {return Iterator(tasks,nbTasks);}
-    virtual specificCurrent() const = 0;
 
-    class specificIterator : public Iterator {
-        specificIterator(Task** t, unsigned int nb) : currentTask(t), remaining(nb) {}
+    /*!
+     * \brief getIterator
+     * \param ct Any Task Iterator should be able to get a Composite Task as a parameter, so that
+    we could iterate on the sub-Tasks of this composite Task.
+     * \return
+     */
+    TasksIterator getIterator(const CompositeTask& ct = 0) {
+        if (ct) return TasksIterator(ct.getSubTasksArray());
+        else return TasksIterator(tasks);
+    }
+
+    /*!
+     * \brief The TypedTasksIterator class
+     * This is a specific Iterator that can be used by any concrete Task Factory
+       to iterate on the specific tasks of its main type.
+     */
+    class TypedTasksIterator : public TasksIterator {
+        TypedTasksIterator(TasksContainer t) : TasksIterator(t){}
         friend class TaskFactory;
-
     public:
-        Task& current() const{
-            specificCurrent();
-        }
+        TypedTasksIterator(): TasksIterator(0) {}
+        void next() override; /* {
+            if (isDone()) throw CalendarException("Error, indirection on a finished iterator");
+            while (**currentTask.getTaskType()!=specificTaskType()) {
+                currentTask.pop_back();
+            }
+        }*/
     };
 
-    specificIterator getSpecificIterator() {return specificIterator(tasks,nbTasks);}
-
-    /* TO DO :
-     * Add factories (virtual unitary factory) -> preemptive factory and nonpreemptive factory, and composite factory
-     * Add iterators declarations,
-     * Define in Task.cpp all the functions
-     * Think about new functions that could be usefull
-    */
-
+    TypedTasksIterator getTypedTasksIterator(CompositeTask& ct = 0) {
+        if (ct) return TypedTasksIterator(ct.getSubTasksArray());
+        else return TypedTasksIterator(tasks);
+    }
 };
 
-class CompositeFactory : public TaskFactory {
-    static Handler compositeHandler;
-    Handler& getStaticVar() const {return compositeHandler;}
-
+class CompositeFactory : public TaskFactory<CompositeTask, CompositeFactory> {
+    CompositeFactory(const CompositeFactory& cf);
+    CompositeFactory& operator=(const CompositeFactory& cf);
+protected:
+    CompositeFactory():TaskFactory(){}
+    enum TaskType specificTaskType() const {return COMPOSITE;}
+    virtual ~CompositeFactory();
+public:
+    static Handler handler;
 };
 
-class UnitaryFactory : public TaskFactory {
-
+template <class T2, class F2>
+class UnitaryFactory : public TaskFactory <T2, F2> {
+    UnitaryFactory(const UnitaryFactory& cf);
+    UnitaryFactory& operator=(const UnitaryFactory& cf);
+protected:
+    UnitaryFactory():TaskFactory<T2,F2>(){}
+    enum TaskType specificTaskType() const {return UNITARY;}
+    virtual ~UnitaryFactory(){}
+    virtual enum UnitarySubTypes specificTaskSubType() const = 0;
+public:
+    class SubTypedTasksIterator : public TaskFactory<T2,F2>::TasksIterator {
+        SubTypedTasksIterator(TasksContainer t) : TaskFactory<T2,F2>::TasksIterator(t){}
+        friend class UnitaryFactory;
+    public:
+        SubTypedTasksIterator() : TaskFactory<T2,F2>::TasksIterator(0){}
+        void next();/* {
+            if (isDone()) throw CalendarException("Error : next on a finished iterator");
+            while (!(**currentTask.getTaskType()==UNITARY && dynamic_cast<UnitaryTask*>(*currentTask)->getUnitarySubType()==specificTaskSubType())) {
+            currentTask.pop_back(); //Dynamic cast possible because of the first condition
+            }
+        }*/
+    };
+    SubTypedTasksIterator getSubTypedTasksIterator(CompositeTask& ct = 0) {
+        if (ct) return SubTypedTasksIterator(ct.getSubTasksArray());
+        else return SubTypedTasksIterator(this->tasks);
+    }
 };
 
-class PreemptiveFactory : public UnitaryFactory {
-
+class PreemptiveFactory : public UnitaryFactory <PreemptiveTask, PreemptiveFactory> {
+    PreemptiveFactory(const PreemptiveFactory& cf);
+    PreemptiveFactory& operator=(const PreemptiveFactory& cf);
+protected:
+    PreemptiveFactory():UnitaryFactory(){}
+    enum UnitarySubTypes specificTaskType() {return PREEMPTIVE;}
+    virtual ~PreemptiveFactory(){}
+public:
+    static Handler handler;
 };
 
-class NonPreemptiveFactory : public UnitaryFactory {
-
+class NonPreemptiveFactory : public UnitaryFactory <NonPreemptiveTask, NonPreemptiveFactory> {
+    NonPreemptiveFactory(const NonPreemptiveFactory& cf);
+    NonPreemptiveFactory& operator=(const NonPreemptiveFactory& cf);
+protected:
+    NonPreemptiveFactory():UnitaryFactory(){}
+    enum UnitarySubTypes specificTaskType() {return NOT_PREEMPTIVE;}
+    virtual ~NonPreemptiveFactory(){}
+public:
+    static Handler handler;
 };
+
 
 #endif // TASK_H

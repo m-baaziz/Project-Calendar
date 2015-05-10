@@ -1,5 +1,6 @@
 #ifndef CALENDAR_H
 #define CALENDAR_H
+#include <iostream>
 #include <QString>
 #include <QDate>
 #include <QTextStream>
