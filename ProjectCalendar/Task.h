@@ -137,11 +137,11 @@ public:
     bool isSubTaskHere(const QString& id) const;
 };
 
-
 template<class T, class F>
 class TaskFactory {
     TaskFactory(const TaskFactory& tf);
     TaskFactory& operator=(const TaskFactory& tf);
+
 protected:
     TaskFactory(){}
     /*!
@@ -162,15 +162,17 @@ protected:
     }
 
     virtual enum TaskType specificTaskType() const = 0;
-    virtual ~TaskFactory();
-
+    template<class a,class b>
+    friend struct Handler;
+    template<class t, class f>
     struct Handler {
-        TaskFactory<T,F>* instance;
+        F* instance;
         Handler():instance(0) {}
         ~Handler(){if (instance) delete[] instance;}
     };
-    static Handler handler;
+    static Handler<T,F> handler;
 public:
+    virtual ~TaskFactory();
     static F& getInstance() {
         if (handler.instance==0) handler.instance = new F;
         return *(handler.instance);
@@ -197,7 +199,7 @@ public:
     bool isTaskHere(const QString& id) const {return findTask(id) != 0;}
     void load(const QString& f);
     void save(const QString& f);
-    void removeTask(Task* t);
+    virtual void removeTask(Task* t);
 
     // ITERATORS
 
@@ -214,10 +216,7 @@ public:
     public:
         TasksIterator() : currentTask(0){}
         bool isDone() const { return currentTask.size()==0;}
-        virtual void next();/* {
-            if (isDone()) throw CalendarException("Error : next on a finished iterator");
-            currentTask.pop_back();
-        }*/
+        virtual void next();
         Task& current() const {
             if (isDone()) throw CalendarException("Error, indirection on a finished iterator");
             return *currentTask[currentTask.size()];
@@ -232,8 +231,8 @@ public:
     we could iterate on the sub-Tasks of this composite Task.
      * \return
      */
-    TasksIterator getIterator(const CompositeTask& ct = 0) {
-        if (ct) return TasksIterator(ct.getSubTasksArray());
+    TasksIterator getIterator(const CompositeTask* ct = 0) {
+        if (ct) return TasksIterator(ct->getSubTasksArray());
         else return TasksIterator(tasks);
     }
 
@@ -247,12 +246,7 @@ public:
         friend class TaskFactory;
     public:
         TypedTasksIterator(): TasksIterator(0) {}
-        void next() override; /* {
-            if (isDone()) throw CalendarException("Error, indirection on a finished iterator");
-            while (**currentTask.getTaskType()!=specificTaskType()) {
-                currentTask.pop_back();
-            }
-        }*/
+        void next() override;
     };
 
     TypedTasksIterator getTypedTasksIterator(CompositeTask& ct = 0) {
@@ -267,9 +261,9 @@ class CompositeFactory : public TaskFactory<CompositeTask, CompositeFactory> {
 protected:
     CompositeFactory():TaskFactory(){}
     enum TaskType specificTaskType() const {return COMPOSITE;}
-    virtual ~CompositeFactory();
+    friend class TaskFactory<CompositeTask, CompositeFactory>;
 public:
-    static Handler handler;
+    virtual ~CompositeFactory(){}
 };
 
 template <class T2, class F2>
@@ -278,21 +272,16 @@ class UnitaryFactory : public TaskFactory <T2, F2> {
     UnitaryFactory& operator=(const UnitaryFactory& cf);
 protected:
     UnitaryFactory():TaskFactory<T2,F2>(){}
-    enum TaskType specificTaskType() const {return UNITARY;}
-    virtual ~UnitaryFactory(){}
+    enum TaskType specificTaskType() const override {return UNITARY;}
     virtual enum UnitarySubTypes specificTaskSubType() const = 0;
 public:
+    virtual ~UnitaryFactory(){}
     class SubTypedTasksIterator : public TaskFactory<T2,F2>::TasksIterator {
         SubTypedTasksIterator(TasksContainer t) : TaskFactory<T2,F2>::TasksIterator(t){}
         friend class UnitaryFactory;
     public:
         SubTypedTasksIterator() : TaskFactory<T2,F2>::TasksIterator(0){}
-        void next();/* {
-            if (isDone()) throw CalendarException("Error : next on a finished iterator");
-            while (!(**currentTask.getTaskType()==UNITARY && dynamic_cast<UnitaryTask*>(*currentTask)->getUnitarySubType()==specificTaskSubType())) {
-            currentTask.pop_back(); //Dynamic cast possible because of the first condition
-            }
-        }*/
+        void next();
     };
     SubTypedTasksIterator getSubTypedTasksIterator(CompositeTask& ct = 0) {
         if (ct) return SubTypedTasksIterator(ct.getSubTasksArray());
@@ -305,10 +294,10 @@ class PreemptiveFactory : public UnitaryFactory <PreemptiveTask, PreemptiveFacto
     PreemptiveFactory& operator=(const PreemptiveFactory& cf);
 protected:
     PreemptiveFactory():UnitaryFactory(){}
-    enum UnitarySubTypes specificTaskType() {return PREEMPTIVE;}
-    virtual ~PreemptiveFactory(){}
+    enum UnitarySubTypes specificTaskSubType() const override {return PREEMPTIVE;}
+    friend class TaskFactory<PreemptiveTask, PreemptiveFactory>;
 public:
-    static Handler handler;
+    virtual ~PreemptiveFactory(){}
 };
 
 class NonPreemptiveFactory : public UnitaryFactory <NonPreemptiveTask, NonPreemptiveFactory> {
@@ -316,10 +305,10 @@ class NonPreemptiveFactory : public UnitaryFactory <NonPreemptiveTask, NonPreemp
     NonPreemptiveFactory& operator=(const NonPreemptiveFactory& cf);
 protected:
     NonPreemptiveFactory():UnitaryFactory(){}
-    enum UnitarySubTypes specificTaskType() {return NOT_PREEMPTIVE;}
-    virtual ~NonPreemptiveFactory(){}
+    enum UnitarySubTypes specificTaskSubType() const override {return NOT_PREEMPTIVE;}
+    friend class TaskFactory<NonPreemptiveTask, NonPreemptiveFactory>;
 public:
-    static Handler handler;
+    virtual ~NonPreemptiveFactory(){}
 };
 
 
