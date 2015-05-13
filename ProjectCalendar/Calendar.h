@@ -4,6 +4,7 @@
 #include <QString>
 #include <QDate>
 #include <QTextStream>
+#include <QDebug>
 
 /*!
  *\file Calendar.h

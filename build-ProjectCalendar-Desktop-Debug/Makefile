@@ -734,6 +734,7 @@ main.o: ../ProjectCalendar/main.cpp ../ProjectCalendar/Calendar.h \
 		/usr/include/qt5/QtCore/qdatastream.h \
 		/usr/include/qt5/QtCore/qregexp.h \
 		/usr/include/qt5/QtCore/qstringmatcher.h \
+		../ProjectCalendar/Task.h \
 		/usr/include/qt5/QtCore/QDebug
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o ../ProjectCalendar/main.cpp
 

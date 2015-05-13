@@ -22,10 +22,10 @@ class Task{
     Task(const Task& t);
     Task& operator=(const Task& t);
 protected:
+    virtual void setTaskType() {}
     Task(const QString& id, const QString& t, const Duration& dur, const QDate& dispo, const QDate& term):
         identifier(id), title(t), duration(dur), disponibility(dispo), deadline(term), taskType(UNITARY){setTaskType();}
     virtual ~Task(){}
-    virtual void setTaskType() = 0;
     QString identifier;
     QString title;
     Duration duration;
@@ -61,7 +61,7 @@ protected:
     UnitaryTask(const QString& id, const QString& t, const Duration& dur, const QDate& dispo, const QDate& term):
         Task(id,t,dur,dispo,term), subType(NOT_PREEMPTIVE){setPreemptive();}
     virtual ~UnitaryTask(){}
-    void setTaskType(){taskType = UNITARY;}
+    void setTaskType() override {taskType = UNITARY;}
     enum UnitarySubTypes subType;
     virtual void setPreemptive() = 0;
 
@@ -114,7 +114,7 @@ protected:
     CompositeTask(const QString& id, const QString& t, const Duration& dur, const QDate& dispo, const QDate& term):
         Task(id,t,dur,dispo,term){}
     virtual ~CompositeTask(); //ask CompositeFactory to destroy the subTasks
-    void setTaskType(){taskType = COMPOSITE;}
+    void setTaskType() override {taskType = COMPOSITE;}
     TasksContainer getSubTasksArray() const {return subTasks;}
 
     template<class T,class F>
@@ -137,48 +137,59 @@ public:
     bool isSubTaskHere(const QString& id) const;
 };
 
+
+class TasksArray {
+protected:
+    /*!
+     * \brief tasks
+     * This array of task addresses is unique and shared with anyother
+       TaskFactory. It holds the addresses of all the tasks, no matter
+       its type.
+     */
+    static TasksContainer tasks;
+};
+
+template<class Factory>
+struct Handler {
+    Factory* instance;
+    Handler():instance(0) {}
+    ~Handler(){if (instance) delete[] instance;}
+};
+
 template<class T, class F>
-class TaskFactory {
+class TaskFactory: public TasksArray {
     TaskFactory(const TaskFactory& tf);
     TaskFactory& operator=(const TaskFactory& tf);
 
 protected:
     TaskFactory(){}
-    /*!
-     * \brief tasks
-     * This array of task addresses is unique and shared with anyother other
-       TaskFactory. It holds the addresses of all the tasks, no matter its
-       type.
-     */
-    static TasksContainer tasks;
-
     QString file;
-
     void addItem(Task* t);
-    T* findTask(const QString& id) const {
-        for (TasksContainer::const_iterator it = tasks.begin(); it != tasks.end(); ++it)
-            if ((*it)->getId()==id) return *it;
+    Task* findTask(const QString& id) const {
+        for (typename F::TasksIterator it = F::getInstance().getIterator(); !(it.isDone()); it.next()) {
+            qDebug()<<"blabla";
+            qDebug()<<it.current().getId();  // problème avec l'iterateur -> mettre plein de qDebug.
+            qDebug()<<"bloblo";
+            if (it.current().getId()==id) return &(it.current());
+        }
         return 0;
     }
 
     virtual enum TaskType specificTaskType() const = 0;
-    template<class a,class b>
-    friend struct Handler;
-    template<class t, class f>
-    struct Handler {
-        F* instance;
-        Handler():instance(0) {}
-        ~Handler(){if (instance) delete[] instance;}
-    };
-    static Handler<T,F> handler;
+    template<class Fa>
+    friend struct Handler;  //every Handler<Fa> is a friend of TaskFactory
+
+    static Handler<F> handler;
 public:
     virtual ~TaskFactory();
     static F& getInstance() {
+        qDebug()<<"Ici ? 1";
         if (handler.instance==0) handler.instance = new F;
+        qDebug()<<"Ici ? 2";
         return *(handler.instance);
     }
 
-    static void freeInstance();
+    void freeInstance();
     T& addTask(const QString& id, const QString& t, const Duration& dur, const QDate& dispo, const QDate& term) {
         if (isTaskHere(id)) throw CalendarException("Error : Task "+id+" already added");
         T* to_add = new T(id,t,dur,dispo,term);
@@ -186,14 +197,14 @@ public:
         return *to_add;
     }
 
-    T& getTask(const QString& id) {
-        T* to_send = findTask(id);
-        if (!to_send) throw CalendarException("Error : Task "+id+" not found");
+    Task& getTask(const QString& id) {
+        Task* to_send = findTask(id);
+        if (to_send==0) throw CalendarException("Error : Task "+id+" not found");
         return *to_send;
     }
 
-    const T& getTask(const QString& id) const { // so that it could be used in const methods that shouldn't modify the task
-        return const_cast<T>(getTask(id));
+    const Task& getTask(const QString& id) const { // so that it could be used in const methods that shouldn't modify the task
+        return const_cast<Task>(getTask(id));
     }
 
     bool isTaskHere(const QString& id) const {return findTask(id) != 0;}
@@ -258,12 +269,13 @@ public:
 class CompositeFactory : public TaskFactory<CompositeTask, CompositeFactory> {
     CompositeFactory(const CompositeFactory& cf);
     CompositeFactory& operator=(const CompositeFactory& cf);
-protected:
-    CompositeFactory():TaskFactory(){}
+public:
+    CompositeFactory():TaskFactory(){qDebug()<<"Ici ? 3";}
     enum TaskType specificTaskType() const {return COMPOSITE;}
-    friend class TaskFactory<CompositeTask, CompositeFactory>;
+    //friend class TaskFactory;
 public:
     virtual ~CompositeFactory(){}
+    void freeInstance() {this->freeInstance();}
 };
 
 template <class T2, class F2>

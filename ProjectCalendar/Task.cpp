@@ -1,14 +1,22 @@
 #include "Task.h"
 
-template <class T,class F>
-TasksContainer TaskFactory<T,F>::tasks = TasksContainer();
+TasksContainer TasksArray::tasks = TasksContainer();
 
+/*template<>
+typename TaskFactory<CompositeTask,CompositeFactory>::Handler<CompositeFactory> TaskFactory<CompositeTask,CompositeFactory>::handler = TaskFactory::Handler<CompositeFactory>();
 template<>
-TaskFactory<CompositeTask,CompositeFactory>::Handler<CompositeTask,CompositeFactory> TaskFactory<CompositeTask,CompositeFactory>::handler = TaskFactory::Handler<CompositeTask,CompositeFactory>();
+typename TaskFactory<PreemptiveTask,PreemptiveFactory>::Handler<PreemptiveFactory> TaskFactory<PreemptiveTask,PreemptiveFactory>::handler = TaskFactory::Handler<PreemptiveFactory>();
 template<>
-TaskFactory<PreemptiveTask,PreemptiveFactory>::Handler<PreemptiveTask,PreemptiveFactory> TaskFactory<PreemptiveTask,PreemptiveFactory>::handler = TaskFactory::Handler<PreemptiveTask,PreemptiveFactory>();
+typename TaskFactory<NonPreemptiveTask,NonPreemptiveFactory>::Handler<NonPreemptiveFactory> TaskFactory<NonPreemptiveTask,NonPreemptiveFactory>::handler = TaskFactory::Handler<NonPreemptiveFactory>();
+*/
 template<>
-TaskFactory<NonPreemptiveTask,NonPreemptiveFactory>::Handler<NonPreemptiveTask,NonPreemptiveFactory> TaskFactory<NonPreemptiveTask,NonPreemptiveFactory>::handler = TaskFactory::Handler<NonPreemptiveTask,NonPreemptiveFactory>();
+Handler<CompositeFactory> TaskFactory<CompositeTask,CompositeFactory>::handler = Handler<CompositeFactory>();
+template<>
+Handler<PreemptiveFactory> TaskFactory<PreemptiveTask,PreemptiveFactory>::handler = Handler<PreemptiveFactory>();
+template<>
+Handler<NonPreemptiveFactory> TaskFactory<NonPreemptiveTask,NonPreemptiveFactory>::handler = Handler<NonPreemptiveFactory>();
+
+
 
 // PREEMPTIVE TASK
 
