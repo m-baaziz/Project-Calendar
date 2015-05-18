@@ -409,7 +409,8 @@ Task.o: ../ProjectCalendar/Task.cpp ../ProjectCalendar/Task.h \
 		/usr/include/qt5/QtCore/qstringlist.h \
 		/usr/include/qt5/QtCore/qdatastream.h \
 		/usr/include/qt5/QtCore/qregexp.h \
-		/usr/include/qt5/QtCore/qstringmatcher.h
+		/usr/include/qt5/QtCore/qstringmatcher.h \
+		/usr/include/qt5/QtCore/QDebug
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o Task.o ../ProjectCalendar/Task.cpp
 
 Project.o: ../ProjectCalendar/Project.cpp 
@@ -501,6 +502,7 @@ Calendar.o: ../ProjectCalendar/Calendar.cpp ../ProjectCalendar/Calendar.h \
 		/usr/include/qt5/QtCore/qdatastream.h \
 		/usr/include/qt5/QtCore/qregexp.h \
 		/usr/include/qt5/QtCore/qstringmatcher.h \
+		/usr/include/qt5/QtCore/QDebug \
 		/usr/include/qt5/QtCore/QFile \
 		/usr/include/qt5/QtCore/qfile.h \
 		/usr/include/qt5/QtCore/qfiledevice.h \
@@ -734,8 +736,8 @@ main.o: ../ProjectCalendar/main.cpp ../ProjectCalendar/Calendar.h \
 		/usr/include/qt5/QtCore/qdatastream.h \
 		/usr/include/qt5/QtCore/qregexp.h \
 		/usr/include/qt5/QtCore/qstringmatcher.h \
-		../ProjectCalendar/Task.h \
-		/usr/include/qt5/QtCore/QDebug
+		/usr/include/qt5/QtCore/QDebug \
+		../ProjectCalendar/Task.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o ../ProjectCalendar/main.cpp
 
 ####### Install

@@ -1,14 +1,8 @@
 #include "Task.h"
 
-TasksContainer TasksArray::tasks = TasksContainer();
+TasksContainer* TasksArray::tasks = new TasksContainer;
+unsigned int TasksArray::nbFactories = 0;
 
-/*template<>
-typename TaskFactory<CompositeTask,CompositeFactory>::Handler<CompositeFactory> TaskFactory<CompositeTask,CompositeFactory>::handler = TaskFactory::Handler<CompositeFactory>();
-template<>
-typename TaskFactory<PreemptiveTask,PreemptiveFactory>::Handler<PreemptiveFactory> TaskFactory<PreemptiveTask,PreemptiveFactory>::handler = TaskFactory::Handler<PreemptiveFactory>();
-template<>
-typename TaskFactory<NonPreemptiveTask,NonPreemptiveFactory>::Handler<NonPreemptiveFactory> TaskFactory<NonPreemptiveTask,NonPreemptiveFactory>::handler = TaskFactory::Handler<NonPreemptiveFactory>();
-*/
 template<>
 Handler<CompositeFactory> TaskFactory<CompositeTask,CompositeFactory>::handler = Handler<CompositeFactory>();
 template<>
@@ -16,13 +10,28 @@ Handler<PreemptiveFactory> TaskFactory<PreemptiveTask,PreemptiveFactory>::handle
 template<>
 Handler<NonPreemptiveFactory> TaskFactory<NonPreemptiveTask,NonPreemptiveFactory>::handler = Handler<NonPreemptiveFactory>();
 
+// TASK
+
+void Task::checkCompositionValidity() {
+    CompositeFactory* cf = &(CompositeFactory::getInstance());
+    //qDebug()<<"this is the spec type : "+QString::number(cf->specificTaskType());
+    CompositeTask* includer;
+    for (CompositeFactory::TasksIterator it = cf->getIterator(); !(it.isDone()); it.next()) {
+        includer = dynamic_cast<CompositeTask*>(&(it.current())); // here we can't use the TypedTasksIterator to get only composite Tasks because it will use a redefined pure virtual method, which may cause some trouble if this method is called during CompositeFactory destruction.
+        if (!includer) continue;  // includer=0 when we get this deleted task.
+        includer = includer->isSubTaskHere(this->getId());
+        if (includer) {
+            includer->removeSubTask(this->getId());
+            qDebug()<<"take out "+this->getId()+" from "+includer->getId();
+            return;
+        }
+    }
+}
 
 
 // PREEMPTIVE TASK
 
-PreemptiveTask::~PreemptiveTask() {
-    PreemptiveFactory::getInstance().removeTask(this);
-}
+PreemptiveTask::~PreemptiveTask() {}
 
 void PreemptiveTask::setInterruption() {
     // to do : manage interruptions
@@ -30,30 +39,50 @@ void PreemptiveTask::setInterruption() {
 
 // NONPREEMPTIVE TASK
 
-NonPreemptiveTask::~NonPreemptiveTask() {
-    NonPreemptiveFactory::getInstance().removeTask(this);
-}
+NonPreemptiveTask::~NonPreemptiveTask() {}
 
 // COMPOSITE TASK
 
 CompositeTask::~CompositeTask() {
     CompositeFactory* cf = &(CompositeFactory::getInstance());
-    for (CompositeFactory::TasksIterator it = cf->getIterator(this); !(it.isDone()); it.next()) {
-        cf->removeTask(&(it.current()));
+    while(!(subTasks.empty())) {
+        qDebug()<<"envoi remove sur "+(subTasks.front())->getId();
+        cf->removeTask(subTasks.front());
+        qDebug()<<"taille de subTasks de "+this->getId()+" : "+QString::number(subTasks.size());
     }
-    cf->removeTask(this);
+    subTasks.clear();
 }
 
-bool CompositeTask::isSubTaskHere(const QString &id) const {
-    for (CompositeFactory::TasksIterator it = CompositeFactory::getInstance().getIterator(this); !(it.isDone()); it.next()) {
-        if (it.current().getId() == id) return true;
+void CompositeTask::fillQueue(std::queue<SubTaskCouple>& qu,const TasksContainer& st,CompositeTask* includer) const {
+    for (TasksContainer::const_iterator it = st.begin(); it!=st.end(); ++it) {
+        qu.push(SubTaskCouple(*it,includer));
     }
-    return false;
+}
+
+CompositeTask* CompositeTask::isSubTaskHere(const QString &id) {
+    std::queue<SubTaskCouple> tasksQueue;
+    SubTaskCouple test;
+    this->fillQueue(tasksQueue,subTasks,this);
+    while(!(tasksQueue.empty())) {
+        test.included = tasksQueue.front().included;
+        test.includer = tasksQueue.front().includer;
+        tasksQueue.pop();
+        if (test.included->getId()==id) {
+            return test.includer;
+        }
+        if (test.included->getTaskType()==COMPOSITE) this->fillQueue(tasksQueue,(dynamic_cast<CompositeTask*>(test.included))->getSubTasksArray(),(dynamic_cast<CompositeTask*>(test.included)));
+    }
+    return 0;
 }
 
 void CompositeTask::addSubTask(Task &t) {
-    if (isSubTaskHere(t.getId())) throw CalendarException("Error : sub-task "+t.getId()+" has already been added in "+getId());
-    subTasks.push_back(&t);
+    if (subTasks.empty() && t.getTaskType()==COMPOSITE && dynamic_cast<CompositeTask*>(&t)->getSubTasksArray().empty())
+        throw CalendarException("Error : a composite Task can't include only composite tasks");
+    if (isSubTaskHere(t.getId()))
+        throw CalendarException("Error : sub-task "+t.getId()+" has already been added in "+getId());
+    if ((t.getTaskType()==COMPOSITE &&dynamic_cast<CompositeTask*>(&t)->isSubTaskHere(this->getId()))) // This huge condition checks if this task includes "t" or if "t" is a composite task that includes this task.
+        throw CalendarException("Error : The task "+t.getId()+" already includes the task "+this->getId());
+    subTasks.push_back(&t);  // check if there is an unitary task at the end, and if this "this" is not included in the task's arborescence
 }
 
 
@@ -67,7 +96,6 @@ Task& CompositeTask::getSubTask(const QString &id) {
 void CompositeTask::removeSubTask(const QString &id) {
     for (TasksContainer::iterator it = subTasks.begin(); it!=subTasks.end(); ++it) {
         if ((*it)->getId()==id) {
-            CompositeFactory::getInstance().removeTask(*it);
             subTasks.erase(it);
             return;
         }
@@ -75,62 +103,10 @@ void CompositeTask::removeSubTask(const QString &id) {
     throw CalendarException("Error : sub-task "+id+" not found in "+getId());
 }
 
-// TASK FACTORY
-
-template <class T,class F>
-void TaskFactory<T,F>::addItem(Task* t) {
-    tasks.push_back(t);
-}
-
-template <class T,class F>
-TaskFactory<T,F>::~TaskFactory() {
-    //if (file!="") this->save(file);
-    for (TasksContainer::iterator it = tasks.begin(); it!=tasks.end(); ++it) {
-        delete *it;
-    }
-    tasks.clear();
-    delete &tasks;
-    file="";
-}
-
-template <class T,class F>
-void TaskFactory<T,F>::freeInstance() {
-    if (handler.instance!=0) delete handler.instance;
-    handler.instance = 0;
-}
-
-template <class T,class F>
-void TaskFactory<T,F>::removeTask(Task *t) {
-    for (TasksContainer::iterator it = tasks.begin(); it!=tasks.end(); ++it) {
-        if (*it==t) {
-            delete *it;
-            tasks.erase(it);
-            return;
-        }
-    }
-}
 
 template <class T,class F>
 void TaskFactory<T,F>::TasksIterator::next() {
     if (isDone()) throw CalendarException("Error : next on a finished iterator");
     currentTask.pop_back();
-}
-
-template <class T,class F>
-void TaskFactory<T,F>::TypedTasksIterator::next(){
-    if (this->isDone()) throw CalendarException("Error, indirection on a finished iterator");
-    while (this->currentTask.back().getTaskType()!=specificTaskType()) {
-        this->currentTask.pop_back();
-    }
-}
-
-// UNITARY TASK FACTORY
-
-template<class T2,class F2>
-void UnitaryFactory<T2,F2>::SubTypedTasksIterator::next() {
-    if (this->isDone()) throw CalendarException("Error : next on a finished iterator");
-    while (!(*(this->currentTask[this->currentTask.size()])->getTaskType()==UNITARY && dynamic_cast<UnitaryTask*>(*(this->currentTask[this->currentTask.size()]))->getUnitarySubType()==specificTaskSubType())) {
-    this->currentTask.pop_back(); //Dynamic cast possible because of the first condition
-    }
 }
 
