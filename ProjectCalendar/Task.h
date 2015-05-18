@@ -24,7 +24,7 @@ class Task{
 protected:
     Task(const QString& id, const QString& t, const Duration& dur, const QDate& dispo, const QDate& term, const enum TaskType& type):
         identifier(id), title(t), duration(dur), disponibility(dispo), deadline(term), taskType(type){}
-    virtual ~Task(){qDebug()<<"destructeur task de task"+getId(); checkCompositionValidity();}
+    virtual ~Task(){checkCompositionValidity();}
     QString identifier;
     QString title;
     Duration duration;
@@ -90,7 +90,7 @@ protected:
     virtual ~PreemptiveTask();
 
     template<class T,class F>
-    friend class TaskFactory;
+    friend class UnitaryFactory;
 public:
     bool isPreemptive() const {return true;}
     void setInterruption();
@@ -105,7 +105,7 @@ protected:
     virtual ~NonPreemptiveTask();
 
     template<class T,class F>
-    friend class TaskFactory;
+    friend class UnitaryFactory;
 public:
     bool isPreemptive() const {return false;}
 };
@@ -127,7 +127,6 @@ protected:
     CompositeTask(const QString& id, const QString& t, const Duration& dur, const QDate& dispo, const QDate& term):
         Task(id,t,dur,dispo,term,COMPOSITE), subTasks(TasksContainer()){}
     virtual ~CompositeTask(); //ask CompositeFactory to destroy the subTasks
-    TasksContainer getSubTasksArray() const {return subTasks;}
     void fillQueue(std::queue<SubTaskCouple>& qu,const TasksContainer& st,CompositeTask* includer) const;
 
     template<class T,class F>
@@ -148,6 +147,7 @@ public:
      */
     void removeSubTask(const QString& id);
     Task& getSubTask(const QString& id);
+    TasksContainer getSubTasksArray() const {return subTasks;}
     /*!
      * \brief isSubTaskHere
      * \param id
@@ -179,8 +179,7 @@ template<class Factory>
 struct Handler {
     Factory* instance;
     Handler():instance(0) {}
-    ~Handler(){qDebug()<<"dans destruc du handler";
-        if (instance) delete instance;}
+    ~Handler(){if (instance) delete instance;}
 };
 
 template<class T, class F>
@@ -192,7 +191,6 @@ class TaskFactory {
 protected:
     TaskFactory():file(""){
        TasksArray::nbFactories ++;
-        qDebug()<<"construction tasks size : "+QString::number(TasksArray::tasks->size());
     }
     QString file;
     //TasksContainer* tasks;
@@ -207,6 +205,9 @@ protected:
         }
         return 0;
     }
+    TasksContainer* getTasksArray() {
+        return TasksArray::tasks;
+    }
 
     template<class Fa>
     friend struct Handler;  //every Handler<Fa> is a friend of TaskFactory
@@ -217,13 +218,9 @@ public:
     virtual ~TaskFactory() {
         //if (file!="") this->save(file);
         TasksArray::nbFactories --;  // reminder : TasksArray::nbFactories is a static variable
-        qDebug()<<"factories remaining : "+QString::number(TasksArray::nbFactories);
-        qDebug()<<"tasks size : "+QString::number(TasksArray::tasks->size());
         if (TasksArray::nbFactories==0) {
             while(!(TasksArray::tasks->empty())) {
-                qDebug()<<"supression de : "+TasksArray::tasks->front()->getId();
                 removeTask(TasksArray::tasks->front());
-                qDebug()<<"voila voila la taille de tasks : "+QString::number(TasksArray::tasks->size());
             }
             TasksArray::tasks->clear();
         }
@@ -236,7 +233,6 @@ public:
     }
 
     static void freeInstance() {
-        qDebug()<<"dans freeInstance";
         if (handler.instance!=0) delete handler.instance;
         handler.instance = 0;
     }
@@ -278,14 +274,10 @@ public:
     void load(const QString& f);
     void save(const QString& f);
     void removeTask(Task* t) {
-        qDebug()<<"debut de remove pour detruire "+t->getId();
-        //tasks->erase(std::remove(tasks->begin(),tasks->end(),t),tasks->end());
         for (TasksContainer::iterator it = TasksArray::tasks->begin(); it!=TasksArray::tasks->end(); ++it) {
             if (*it==t) {
-                qDebug()<<"dans for remove  pour detruire "+t->getId();
                 delete *it;
                 TasksArray::tasks->erase(it);   // look how to empty correctly a vector
-                qDebug()<<"taille de tasks : "+QString::number(TasksArray::tasks->size());
                 return;
             }
         }
@@ -306,8 +298,13 @@ public:
         friend class TaskFactory;
     public:
         TasksIterator() : currentTask(0){}
+        virtual ~TasksIterator(){}
         bool isDone() const { return currentTask.size()==0;}
-        virtual void next();
+        void next(){
+            if (isDone()) throw CalendarException("Error : next on a finished iterator");
+            currentTask.pop_back();
+        }
+
         Task& current() const {
             if (isDone()) throw CalendarException("Error, indirection on a finished iterator");
             return *currentTask.back();
@@ -334,16 +331,11 @@ public:
      */
     class TypedTasksIterator : public TasksIterator {
         TypedTasksIterator(TasksContainer t) : TasksIterator(t){
-            qDebug()<<"construction du TypedTaskIterator avec taille : "+QString::number(t.size());
-            //std::vector<TasksContainer::iterator> toDelete;
             for (TasksContainer::iterator it = this->currentTask.begin(); it!=this->currentTask.end();) {
-                qDebug()<<"Dans le for";
                 if ((*it)->getTaskType()!=F::getInstance().specificTaskType()) {
                     this->currentTask.erase(it);
-                    qDebug()<<"on supprime : "+QString::number((*it)->getTaskType());
                 }
                 else {
-                    qDebug()<<"on ajoute : "+QString::number((*it)->getTaskType());
                     ++it;
                 }
             }
@@ -352,17 +344,11 @@ public:
     public:
         TypedTasksIterator(): TasksIterator(0) {}
         T& current() const {
-            qDebug()<<"trying current "+QString::number(this->currentTask.size());
-            return *(dynamic_cast<T*>(&(TasksIterator::current())));
-        }
-        /*void next() override {
             if (this->isDone()) throw CalendarException("Error, indirection on a finished iterator");
-            while (!(this->isDone()) && this->currentTask.back()->getTaskType()!=getInstance().specificTaskType()) {  // turn to static method !
-                qDebug()<<"avant popback";
-                this->currentTask.pop_back();
-                qDebug()<<"apres popback";
-            }
-        }*/
+            Task* taskCurrent = this->currentTask.back();
+            T* toSend = dynamic_cast<T*>(taskCurrent);
+            return *toSend;
+        }
     };
 
     TypedTasksIterator getTypedTasksIterator(const CompositeTask* ct = 0) {
@@ -378,39 +364,61 @@ protected:
     CompositeFactory():TaskFactory(){}
     friend class TaskFactory<CompositeTask,CompositeFactory>;
 public:
-    virtual ~CompositeFactory(){qDebug()<<"destr du compo";}
+    virtual ~CompositeFactory(){}
     enum TaskType specificTaskType() const override {return COMPOSITE;}
 };
 
 template <class T2, class F2>
-class UnitaryFactory : public TaskFactory <T2, F2> {
+class UnitaryFactory : public TaskFactory <UnitaryTask, F2> {
     UnitaryFactory(const UnitaryFactory& cf);
     UnitaryFactory& operator=(const UnitaryFactory& cf);
 protected:
-    UnitaryFactory():TaskFactory<T2,F2>(){}
+    UnitaryFactory():TaskFactory<UnitaryTask,F2>(){}
 public:
     virtual ~UnitaryFactory(){}
     enum TaskType specificTaskType() const override {return UNITARY;}
     virtual enum UnitarySubTypes specificTaskSubType() const = 0;
     class SubTypedTasksIterator : public TaskFactory<T2,F2>::TasksIterator {
         SubTypedTasksIterator(TasksContainer t) : TaskFactory<T2,F2>::TasksIterator(t){
-            for (TasksContainer::iterator it = t.begin(); it!=t.end(); ++it) {
-                if (!((*it)->getTaskType()==UNITARY && dynamic_cast<UnitaryTask*>(*it)->getUnitarySubType()==specificTaskSubType())) t.erase(it);
+            for (TasksContainer::iterator it = this->currentTask.begin(); it!=this->currentTask.end();) {
+                if (!((*it)->getTaskType()==UNITARY && dynamic_cast<UnitaryTask*>(*it)->getUnitarySubType()==F2::getInstance().specificTaskSubType())) this->currentTask.erase(it);
+                else {
+                    qDebug()<<"type de "+(*it)->getId()+" : ";//+(*it)->getTaskType();
+                    ++it;
+                }
             }
+            qDebug()<<"nombre de current Task : "+QString::number(this->currentTask.size());
         }
         friend class UnitaryFactory;
     public:
         SubTypedTasksIterator() : TaskFactory<T2,F2>::TasksIterator(0){}
-        /*void next() {
-            if (this->isDone()) throw CalendarException("Error : next on a finished iterator");
-            while (!(this->isDone()) && !(this->currentTask.back()->getTaskType()==UNITARY && dynamic_cast<UnitaryTask*>(this->currentTask.back())->getUnitarySubType()==specificTaskSubType())) {
-            this->currentTask.pop_back(); //Dynamic cast possible because of the first condition
-            }
-        }*/
+        T2& current() const {
+            if (this->isDone()) throw CalendarException("Error, indirection on a finished iterator");
+            Task* taskCurrent = this->currentTask.back();
+            T2* toSend = dynamic_cast<T2*>(taskCurrent);
+            if (!toSend) qDebug()<<"toSend est null, taille de currentTask : "+QString::number(this->currentTask.size());
+            return *toSend;
+        }
     };
     SubTypedTasksIterator getSubTypedTasksIterator(CompositeTask* ct = 0) {
         if (ct) return SubTypedTasksIterator(ct->getSubTasksArray()); // try to factorise all of this
-        else return SubTypedTasksIterator(this->tasks);
+        else return SubTypedTasksIterator(*(this->getTasksArray()));
+    }
+
+    T2& addTask(const QString& id, const QString& t, const Duration& dur, const QDate& dispo, const QDate& term) {
+        if (this->isTaskHere(id)) throw CalendarException("Error : Task "+id+" already added");
+        T2* to_add = new T2(id,t,dur,dispo,term);
+        this->addItem(to_add);
+        return *to_add;
+    }
+
+    T2& getSubTypedTask(const QString& id) {
+        T2* toSend = dynamic_cast<T2*>(&(this->getTask(id)));
+        if (toSend) return *toSend;
+        else throw CalendarException("Error : Type of Task "+id+" and asked subtype don't match");
+    }
+    const T2& getSubTypedTask(const QString &id) const {
+        return const_cast<T2>(getSubTypedTask(id));
     }
 };
 
@@ -419,7 +427,8 @@ class PreemptiveFactory : public UnitaryFactory <PreemptiveTask, PreemptiveFacto
     PreemptiveFactory& operator=(const PreemptiveFactory& cf);
 protected:
     PreemptiveFactory():UnitaryFactory(){}
-    friend class TaskFactory<PreemptiveTask, PreemptiveFactory>;
+    friend class UnitaryFactory<PreemptiveTask, PreemptiveFactory>;
+    friend class TaskFactory<UnitaryTask, PreemptiveFactory>;
 public:
     virtual ~PreemptiveFactory(){}
     enum UnitarySubTypes specificTaskSubType() const override {return PREEMPTIVE;}
@@ -430,7 +439,8 @@ class NonPreemptiveFactory : public UnitaryFactory <NonPreemptiveTask, NonPreemp
     NonPreemptiveFactory& operator=(const NonPreemptiveFactory& cf);
 protected:
     NonPreemptiveFactory():UnitaryFactory(){}
-    friend class TaskFactory<NonPreemptiveTask, NonPreemptiveFactory>;
+    friend class UnitaryFactory<NonPreemptiveTask, NonPreemptiveFactory>;
+    friend class TaskFactory<UnitaryTask, NonPreemptiveFactory>;
 public:
     virtual ~NonPreemptiveFactory(){}
     enum UnitarySubTypes specificTaskSubType() const override {return NOT_PREEMPTIVE;}

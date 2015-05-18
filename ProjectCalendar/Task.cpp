@@ -6,9 +6,9 @@ unsigned int TasksArray::nbFactories = 0;
 template<>
 Handler<CompositeFactory> TaskFactory<CompositeTask,CompositeFactory>::handler = Handler<CompositeFactory>();
 template<>
-Handler<PreemptiveFactory> TaskFactory<PreemptiveTask,PreemptiveFactory>::handler = Handler<PreemptiveFactory>();
+Handler<PreemptiveFactory> TaskFactory<UnitaryTask,PreemptiveFactory>::handler = Handler<PreemptiveFactory>();
 template<>
-Handler<NonPreemptiveFactory> TaskFactory<NonPreemptiveTask,NonPreemptiveFactory>::handler = Handler<NonPreemptiveFactory>();
+Handler<NonPreemptiveFactory> TaskFactory<UnitaryTask,NonPreemptiveFactory>::handler = Handler<NonPreemptiveFactory>();
 
 // TASK
 
@@ -22,7 +22,6 @@ void Task::checkCompositionValidity() {
         includer = includer->isSubTaskHere(this->getId());
         if (includer) {
             includer->removeSubTask(this->getId());
-            qDebug()<<"take out "+this->getId()+" from "+includer->getId();
             return;
         }
     }
@@ -46,9 +45,7 @@ NonPreemptiveTask::~NonPreemptiveTask() {}
 CompositeTask::~CompositeTask() {
     CompositeFactory* cf = &(CompositeFactory::getInstance());
     while(!(subTasks.empty())) {
-        qDebug()<<"envoi remove sur "+(subTasks.front())->getId();
         cf->removeTask(subTasks.front());
-        qDebug()<<"taille de subTasks de "+this->getId()+" : "+QString::number(subTasks.size());
     }
     subTasks.clear();
 }
@@ -101,12 +98,5 @@ void CompositeTask::removeSubTask(const QString &id) {
         }
     }
     throw CalendarException("Error : sub-task "+id+" not found in "+getId());
-}
-
-
-template <class T,class F>
-void TaskFactory<T,F>::TasksIterator::next() {
-    if (isDone()) throw CalendarException("Error : next on a finished iterator");
-    currentTask.pop_back();
 }
 

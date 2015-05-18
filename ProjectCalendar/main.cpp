@@ -22,14 +22,21 @@ int main() {
         qDebug()<<"après for";
         PreemptiveFactory* cp = &(PreemptiveFactory::getInstance());
         PreemptiveTask& prem=cp->addTask("SI28","Ecriture multimedia",Duration(1,30),QDate(2013,02,12),QDate(2045,05,06));
+        PreemptiveTask& prem2=cp->addTask("TEST","Ecriture TEST",Duration(1,30),QDate(2013,02,12),QDate(2045,05,06));
         compo.addSubTask(prem);
-        ct1.addSubTask(cf->getTask("LO21"));
+        compo.addSubTask(prem2);
+        //ct1.addSubTask(cf->getTask("LO21"));
         NonPreemptiveFactory* cnp = &(NonPreemptiveFactory::getInstance());
         cnp->addTask("LG62","Chinois niveau 2",Duration(1,30),QDate(2013,02,12),QDate(2045,05,06));
         compo.addSubTask(cf->getTask("LG62"));
-        for (PreemptiveFactory::TypedTasksIterator it = cp->getTypedTasksIterator(&compo); !(it.isDone()); it.next())
-            qDebug()<<it.current().getTitle();
-        qDebug()<<"ici AAA ?";
+        compo.addSubTask(ct1);
+        qDebug()<<"DEUXIEME ENUMERATION";
+        for (PreemptiveFactory::SubTypedTasksIterator it = cp->getSubTypedTasksIterator(&compo); !(it.isDone()); it.next()) {
+            qDebug()<<"debut du for du subtype";
+            PreemptiveTask& toPrint = it.current();
+            qDebug()<<"apres current du subtype";
+            qDebug()<<toPrint.getId();
+        }
     }
     catch
     (CalendarException error) {cout<<error.getInfo();}
