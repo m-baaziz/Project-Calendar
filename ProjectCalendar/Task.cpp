@@ -4,17 +4,16 @@ TasksContainer* TasksArray::tasks = new TasksContainer;
 unsigned int TasksArray::nbFactories = 0;
 
 template<>
-Handler<CompositeFactory> TaskFactory<CompositeTask,CompositeFactory>::handler = Handler<CompositeFactory>();
+Handler<CompositeFactory> Singleton<CompositeFactory>::handler = Handler<CompositeFactory>();
 template<>
-Handler<PreemptiveFactory> TaskFactory<UnitaryTask,PreemptiveFactory>::handler = Handler<PreemptiveFactory>();
+Handler<PreemptiveFactory> Singleton<PreemptiveFactory>::handler = Handler<PreemptiveFactory>();
 template<>
-Handler<NonPreemptiveFactory> TaskFactory<UnitaryTask,NonPreemptiveFactory>::handler = Handler<NonPreemptiveFactory>();
+Handler<NonPreemptiveFactory> Singleton<NonPreemptiveFactory>::handler = Handler<NonPreemptiveFactory>();
 
 // TASK
 
 void Task::checkCompositionValidity() {
     CompositeFactory* cf = &(CompositeFactory::getInstance());
-    //qDebug()<<"this is the spec type : "+QString::number(cf->specificTaskType());
     CompositeTask* includer;
     for (CompositeFactory::TasksIterator it = cf->getIterator(); !(it.isDone()); it.next()) {
         includer = dynamic_cast<CompositeTask*>(&(it.current())); // here we can't use the TypedTasksIterator to get only composite Tasks because it will use a redefined pure virtual method, which may cause some trouble if this method is called during CompositeFactory destruction.

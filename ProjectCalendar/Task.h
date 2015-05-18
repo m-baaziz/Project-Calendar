@@ -175,22 +175,53 @@ private:
     friend class TaskFactory;
 };
 
-template<class Factory>
-struct Handler {
-    Factory* instance;
+template<class S>
+class Handler {
+    S* instance;
     Handler():instance(0) {}
     ~Handler(){if (instance) delete instance;}
+    template<class any>
+    friend class Singleton;
+};
+
+template<class Type>
+class Singleton {
+protected:
+    virtual ~Singleton(){}
+    template<class Fa>
+    friend struct Handler;  //every Handler<Fa> is a friend of Singleton
+    static Handler<Type> handler;
+public:
+    static Type& getInstance() {
+            if (handler.instance==0) handler.instance = new Type;
+            return *(handler.instance);
+        }
+
+    static void freeInstance() {
+        if (handler.instance!=0) delete handler.instance;
+        handler.instance = 0;
+    }
 };
 
 template<class T, class F>
-class TaskFactory {
+class TaskFactory: public Singleton<F> {
     TaskFactory(const TaskFactory& tf);
     TaskFactory& operator=(const TaskFactory& tf);
     //TasksArray* tasksArray;
 
 protected:
-    TaskFactory():file(""){
-       TasksArray::nbFactories ++;
+
+    TaskFactory():file(""){TasksArray::nbFactories ++;}
+    virtual ~TaskFactory() {
+        //if (file!="") this->save(file);
+        TasksArray::nbFactories --;  // reminder : TasksArray::nbFactories is a static variable
+        if (TasksArray::nbFactories==0) {
+            while(!(TasksArray::tasks->empty())) {
+                removeTask(TasksArray::tasks->front());
+            }
+            TasksArray::tasks->clear();
+        }
+        file="";
     }
     QString file;
     //TasksContainer* tasks;
@@ -209,25 +240,13 @@ protected:
         return TasksArray::tasks;
     }
 
-    template<class Fa>
-    friend struct Handler;  //every Handler<Fa> is a friend of TaskFactory
+    friend class Singleton<F>;  //every Handler<Fa> is a friend of TaskFactory
 
-    static Handler<F> handler;
+    //static Handler<F> handler;
 public:
     virtual enum TaskType specificTaskType() const=0;
-    virtual ~TaskFactory() {
-        //if (file!="") this->save(file);
-        TasksArray::nbFactories --;  // reminder : TasksArray::nbFactories is a static variable
-        if (TasksArray::nbFactories==0) {
-            while(!(TasksArray::tasks->empty())) {
-                removeTask(TasksArray::tasks->front());
-            }
-            TasksArray::tasks->clear();
-        }
-        file="";
-    }
 
-    static F& getInstance() {
+    /*static F& getInstance() {
         if (handler.instance==0) handler.instance = new F;
         return *(handler.instance);
     }
@@ -235,7 +254,7 @@ public:
     static void freeInstance() {
         if (handler.instance!=0) delete handler.instance;
         handler.instance = 0;
-    }
+    }*/
 
     T& addTask(const QString& id, const QString& t, const Duration& dur, const QDate& dispo, const QDate& term) {
         if (isTaskHere(id)) throw CalendarException("Error : Task "+id+" already added");
@@ -362,9 +381,10 @@ class CompositeFactory : public TaskFactory<CompositeTask, CompositeFactory> {
     CompositeFactory& operator=(const CompositeFactory& cf);
 protected:
     CompositeFactory():TaskFactory(){}
-    friend class TaskFactory<CompositeTask,CompositeFactory>;
-public:
     virtual ~CompositeFactory(){}
+    friend class Singleton<CompositeFactory>;
+    friend class Handler<CompositeFactory>;
+public:
     enum TaskType specificTaskType() const override {return COMPOSITE;}
 };
 
@@ -383,11 +403,9 @@ public:
             for (TasksContainer::iterator it = this->currentTask.begin(); it!=this->currentTask.end();) {
                 if (!((*it)->getTaskType()==UNITARY && dynamic_cast<UnitaryTask*>(*it)->getUnitarySubType()==F2::getInstance().specificTaskSubType())) this->currentTask.erase(it);
                 else {
-                    qDebug()<<"type de "+(*it)->getId()+" : ";//+(*it)->getTaskType();
                     ++it;
                 }
             }
-            qDebug()<<"nombre de current Task : "+QString::number(this->currentTask.size());
         }
         friend class UnitaryFactory;
     public:
@@ -396,7 +414,6 @@ public:
             if (this->isDone()) throw CalendarException("Error, indirection on a finished iterator");
             Task* taskCurrent = this->currentTask.back();
             T2* toSend = dynamic_cast<T2*>(taskCurrent);
-            if (!toSend) qDebug()<<"toSend est null, taille de currentTask : "+QString::number(this->currentTask.size());
             return *toSend;
         }
     };
@@ -427,10 +444,10 @@ class PreemptiveFactory : public UnitaryFactory <PreemptiveTask, PreemptiveFacto
     PreemptiveFactory& operator=(const PreemptiveFactory& cf);
 protected:
     PreemptiveFactory():UnitaryFactory(){}
-    friend class UnitaryFactory<PreemptiveTask, PreemptiveFactory>;
-    friend class TaskFactory<UnitaryTask, PreemptiveFactory>;
-public:
     virtual ~PreemptiveFactory(){}
+    friend class Singleton<PreemptiveFactory>;
+    friend class Handler<PreemptiveFactory>;
+public:
     enum UnitarySubTypes specificTaskSubType() const override {return PREEMPTIVE;}
 };
 
@@ -439,10 +456,10 @@ class NonPreemptiveFactory : public UnitaryFactory <NonPreemptiveTask, NonPreemp
     NonPreemptiveFactory& operator=(const NonPreemptiveFactory& cf);
 protected:
     NonPreemptiveFactory():UnitaryFactory(){}
-    friend class UnitaryFactory<NonPreemptiveTask, NonPreemptiveFactory>;
-    friend class TaskFactory<UnitaryTask, NonPreemptiveFactory>;
-public:
     virtual ~NonPreemptiveFactory(){}
+    friend class Singleton<NonPreemptiveFactory>;
+    friend class Handler<NonPreemptiveFactory>;
+public:
     enum UnitarySubTypes specificTaskSubType() const override {return NOT_PREEMPTIVE;}
 };
 
