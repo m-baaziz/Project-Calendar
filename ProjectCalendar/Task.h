@@ -1,6 +1,8 @@
 #ifndef TASK_H
 #define TASK_H
 #include "Calendar.h"
+#include "Singleton.h"
+#include "Iterator.h"
 
 /*!
  * \file Task.h
@@ -21,25 +23,18 @@ enum UnitarySubTypes {PREEMPTIVE, NOT_PREEMPTIVE};
 class Task{ 
     Task(const Task& t);
     Task& operator=(const Task& t);
+
+    void checkCompositionValidity();
 protected:
     Task(const QString& id, const QString& t, const Duration& dur, const QDate& dispo, const QDate& term, const enum TaskType& type):
         identifier(id), title(t), duration(dur), disponibility(dispo), deadline(term), taskType(type){}
-    virtual ~Task(){checkCompositionValidity();}
+    virtual ~Task(){}
     QString identifier;
     QString title;
     Duration duration;
     QDate disponibility;
     QDate deadline;
     enum TaskType taskType;
-    /*!
-     * \brief checkCompositionValidity
-     * This method checks if this task is included or not by a Composite Task.
-       If there is a Composite Task including this taks, then this method calls
-       removeSubTask in order to keep the subTasks arrays valid.
-       This method allows us to not check for subTask's validy every time we want to use it.
-     * Important: If CompositeTask is no longer effective, then simply remove this method.
-     */
-    void checkCompositionValidity();
 
     template<class T,class F>
     friend class TaskFactory;
@@ -60,6 +55,8 @@ public:
 };
 
 typedef std::vector<Task*> TasksContainer;
+typedef Iterator<Task> TasksIterator;
+typedef IterationStrategy<Task> TasksIterationStrategy;
 
 
 class UnitaryTask: public Task {
@@ -111,12 +108,27 @@ public:
 };
 
 
-class CompositeTask: public Task {
+class CompositeTask: public Task, public Aggregator<Task> {
     CompositeTask(const CompositeTask& t);
     CompositeTask& operator=(const CompositeTask& t);
+
+    /*!
+     * \brief checkCompositionValidity
+     * This method checks if this task is included or not by a Composite Task.
+       If there is a Composite Task including this taks, then this method calls
+       removeSubTask in order to keep the subTasks arrays valid.
+       This method allows us to not check for subTask's validy every time we want to use it.
+     * Important: If CompositeTask is no longer effective, then simply remove this method.
+     */
+
 protected:
     TasksContainer  subTasks;
 
+    /*!
+     * \brief The SubTaskCouple struct
+     * Proposes a structure to store a couple of tasks : included and includer.
+     * This structure is used in method isSubTaskHere.
+     */
     struct SubTaskCouple {
         Task* included;
         CompositeTask* includer;
@@ -125,7 +137,7 @@ protected:
     };
 
     CompositeTask(const QString& id, const QString& t, const Duration& dur, const QDate& dispo, const QDate& term):
-        Task(id,t,dur,dispo,term,COMPOSITE), subTasks(TasksContainer()){}
+        Task(id,t,dur,dispo,term,COMPOSITE),subTasks(TasksContainer()),Aggregator(&subTasks){}
     virtual ~CompositeTask(); //ask CompositeFactory to destroy the subTasks
     void fillQueue(std::queue<SubTaskCouple>& qu,const TasksContainer& st,CompositeTask* includer) const;
 
@@ -148,6 +160,7 @@ public:
     void removeSubTask(const QString& id);
     Task& getSubTask(const QString& id);
     TasksContainer getSubTasksArray() const {return subTasks;}
+
     /*!
      * \brief isSubTaskHere
      * \param id
@@ -159,7 +172,6 @@ public:
      */
     CompositeTask* isSubTaskHere(const QString& id);
 };
-
 
 class TasksArray {
 private:
@@ -175,91 +187,52 @@ private:
     friend class TaskFactory;
 };
 
-template<class S>
-class Handler {
-    S* instance;
-    Handler():instance(0) {}
-    ~Handler(){if (instance) delete instance;}
-    template<class any>
-    friend class Singleton;
-};
-
-template<class Type>
-class Singleton {
-protected:
-    virtual ~Singleton(){}
-    template<class Fa>
-    friend struct Handler;  //every Handler<Fa> is a friend of Singleton
-    static Handler<Type> handler;
-public:
-    static Type& getInstance() {
-            if (handler.instance==0) handler.instance = new Type;
-            return *(handler.instance);
-        }
-
-    static void freeInstance() {
-        if (handler.instance!=0) delete handler.instance;
-        handler.instance = 0;
-    }
-};
-
 template<class T, class F>
-class TaskFactory: public Singleton<F> {
+class TaskFactory: public Singleton<F>, public Aggregator<Task> {
     TaskFactory(const TaskFactory& tf);
     TaskFactory& operator=(const TaskFactory& tf);
     //TasksArray* tasksArray;
 
 protected:
 
-    TaskFactory():file(""){TasksArray::nbFactories ++;}
+    TaskFactory():file(""),tasks(TasksArray::tasks),Aggregator<Task>(TasksArray::tasks){TasksArray::nbFactories ++;}
     virtual ~TaskFactory() {
         //if (file!="") this->save(file);
         TasksArray::nbFactories --;  // reminder : TasksArray::nbFactories is a static variable
         if (TasksArray::nbFactories==0) {
-            while(!(TasksArray::tasks->empty())) {
-                removeTask(TasksArray::tasks->front());
-            }
-            TasksArray::tasks->clear();
+            while(!(tasks->empty())) removeTask(tasks->front());
+            tasks->clear();
         }
         file="";
     }
     QString file;
-    //TasksContainer* tasks;
+    TasksContainer* tasks;
 
     void addItem(Task* t) {
-        TasksArray::tasks->push_back(t);
+        tasks->push_back(t);
     }
 
     Task* findTask(const QString& id) const {
-        for (TasksContainer::iterator it = TasksArray::tasks->begin(); it!=TasksArray::tasks->end(); ++it) {
+        for (TasksContainer::iterator it = tasks->begin(); it!=tasks->end(); ++it) {
             if ((*it)->getId()==id) return *it;
         }
         return 0;
     }
     TasksContainer* getTasksArray() {
-        return TasksArray::tasks;
+        return tasks;
     }
 
     friend class Singleton<F>;  //every Handler<Fa> is a friend of TaskFactory
 
-    //static Handler<F> handler;
 public:
+    typedef Iterator<T> TypedTasksIterator;
     virtual enum TaskType specificTaskType() const=0;
 
-    /*static F& getInstance() {
-        if (handler.instance==0) handler.instance = new F;
-        return *(handler.instance);
-    }
-
-    static void freeInstance() {
-        if (handler.instance!=0) delete handler.instance;
-        handler.instance = 0;
-    }*/
 
     T& addTask(const QString& id, const QString& t, const Duration& dur, const QDate& dispo, const QDate& term) {
         if (isTaskHere(id)) throw CalendarException("Error : Task "+id+" already added");
         T* to_add = new T(id,t,dur,dispo,term);
-        TasksArray::tasks->push_back(to_add);
+        tasks->push_back(to_add);
         return *to_add;
     }
 
@@ -284,96 +257,46 @@ public:
     }
 
     bool isTaskHere(const Task* const id) const {
-        for (TasksContainer::iterator it = TasksArray::tasks->begin(); it!=TasksArray::tasks->end(); ++it) {
+        for (TasksContainer::iterator it = tasks->begin(); it!=tasks->end(); ++it) {
             if (id==*it) return true;
         }
         return false;
     }
+
+    int i =0;
+
     bool isTaskHere(const QString& id) const {return findTask(id) != 0;}
     void load(const QString& f);
     void save(const QString& f);
     void removeTask(Task* t) {
-        for (TasksContainer::iterator it = TasksArray::tasks->begin(); it!=TasksArray::tasks->end(); ++it) {
-            if (*it==t) {
+        for (TasksContainer::iterator it = tasks->begin(); it!=tasks->end(); ++it) {
+            if (t && *it==t) {
+                (*it)->checkCompositionValidity();
                 delete *it;
-                TasksArray::tasks->erase(it);   // look how to empty correctly a vector
+                break;
+            }
+        }
+        for (TasksContainer::iterator it = tasks->begin(); it!=tasks->end(); ++it) { // we have to look for the right "it" one more time because if we delete a composite task, it will delete also its subTasks : tasks array will be reduced and it won't be valid anymore.
+            if (t && *it==t) {
+                tasks->erase(it);
                 return;
             }
         }
     }
 
-
-    // ITERATORS
-
-    /*!
-     * \brief The TasksIterator class
-     * This is a global Iterator shared by every Task Factory. It makes
-       iterating on the whole set of tasks possible from any Task Factory.
-     */
-    class TasksIterator {
-    protected:
-        TasksIterator(TasksContainer t) : currentTask(t){}
-        TasksContainer currentTask;
-        friend class TaskFactory;
-    public:
-        TasksIterator() : currentTask(0){}
-        virtual ~TasksIterator(){}
-        bool isDone() const { return currentTask.size()==0;}
-        void next(){
-            if (isDone()) throw CalendarException("Error : next on a finished iterator");
-            currentTask.pop_back();
-        }
-
-        Task& current() const {
-            if (isDone()) throw CalendarException("Error, indirection on a finished iterator");
-            return *currentTask.back();
-        }
-
-    };
-
-
-    /*!
-     * \brief getIterator
-     * \param ct Any Task Iterator should be able to get a Composite Task as a parameter, so that
-    we could iterate on the sub-Tasks of this composite Task.
-     * \return
-     */
-    TasksIterator getIterator(const CompositeTask* ct = 0) {
-        if (ct) return TasksIterator(ct->getSubTasksArray());
-        else return TasksIterator(*TasksArray::tasks);
-    }
-
-    /*!
-     * \brief The TypedTasksIterator class
-     * This is a specific Iterator that can be used by any concrete Task Factory
-       to iterate on the specific tasks of its main type.
-     */
-    class TypedTasksIterator : public TasksIterator {
-        TypedTasksIterator(TasksContainer t) : TasksIterator(t){
-            for (TasksContainer::iterator it = this->currentTask.begin(); it!=this->currentTask.end();) {
-                if ((*it)->getTaskType()!=F::getInstance().specificTaskType()) {
-                    this->currentTask.erase(it);
-                }
-                else {
-                    ++it;
-                }
-            }
-        }
-        friend class TaskFactory;
-    public:
-        TypedTasksIterator(): TasksIterator(0) {}
-        T& current() const {
-            if (this->isDone()) throw CalendarException("Error, indirection on a finished iterator");
-            Task* taskCurrent = this->currentTask.back();
-            T* toSend = dynamic_cast<T*>(taskCurrent);
-            return *toSend;
+    template<int Y,int M,int D>  // Y : year, M : month, D : day
+    class DispoTasksIterationStrategy : public TasksIterationStrategy {
+        bool test(Task* tested) const override {
+            return tested->getDisponibility()>=QDate(Y,M,D);
         }
     };
 
-    TypedTasksIterator getTypedTasksIterator(const CompositeTask* ct = 0) {
-        if (ct) return TypedTasksIterator(ct->getSubTasksArray());
-        else return TypedTasksIterator(*TasksArray::tasks);
+
+    TypedTasksIterator getTypedTasksIterator(const TasksIterationStrategy* strategy = 0) {
+        return this->template getIterator<T>(strategy);
     }
+
+
 };
 
 class CompositeFactory : public TaskFactory<CompositeTask, CompositeFactory> {
@@ -385,6 +308,7 @@ protected:
     friend class Singleton<CompositeFactory>;
     friend class Handler<CompositeFactory>;
 public:
+    CompositeTask* isTaskIncluded (const QString& id);
     enum TaskType specificTaskType() const override {return COMPOSITE;}
 };
 
@@ -395,33 +319,26 @@ class UnitaryFactory : public TaskFactory <UnitaryTask, F2> {
 protected:
     UnitaryFactory():TaskFactory<UnitaryTask,F2>(){}
 public:
+    typedef Iterator<T2> SubTypedTasksIterator;
     virtual ~UnitaryFactory(){}
     enum TaskType specificTaskType() const override {return UNITARY;}
     virtual enum UnitarySubTypes specificTaskSubType() const = 0;
-    class SubTypedTasksIterator : public TaskFactory<T2,F2>::TasksIterator {
-        SubTypedTasksIterator(TasksContainer t) : TaskFactory<T2,F2>::TasksIterator(t){
-            for (TasksContainer::iterator it = this->currentTask.begin(); it!=this->currentTask.end();) {
-                if (!((*it)->getTaskType()==UNITARY && dynamic_cast<UnitaryTask*>(*it)->getUnitarySubType()==F2::getInstance().specificTaskSubType())) this->currentTask.erase(it);
-                else {
-                    ++it;
-                }
-            }
-        }
-        friend class UnitaryFactory;
-    public:
-        SubTypedTasksIterator() : TaskFactory<T2,F2>::TasksIterator(0){}
-        T2& current() const {
-            if (this->isDone()) throw CalendarException("Error, indirection on a finished iterator");
-            Task* taskCurrent = this->currentTask.back();
-            T2* toSend = dynamic_cast<T2*>(taskCurrent);
-            return *toSend;
-        }
-    };
-    SubTypedTasksIterator getSubTypedTasksIterator(CompositeTask* ct = 0) {
-        if (ct) return SubTypedTasksIterator(ct->getSubTasksArray()); // try to factorise all of this
-        else return SubTypedTasksIterator(*(this->getTasksArray()));
+
+    SubTypedTasksIterator getSubTypedTasksIterator() {
+        return this->template getIterator<T2>();
     }
 
+    /*!
+     * \brief addTask
+     * \param id
+     * \param t
+     * \param dur
+     * \param dispo
+     * \param term
+     * \return
+     * This is a redefinition of TaskFactory's addTask method made to get the right Task type, and so that
+       we prevent TaskFactory to produce (new ...) UnitaryTask objects (UnitaryTask is abstract).
+     */
     T2& addTask(const QString& id, const QString& t, const Duration& dur, const QDate& dispo, const QDate& term) {
         if (this->isTaskHere(id)) throw CalendarException("Error : Task "+id+" already added");
         T2* to_add = new T2(id,t,dur,dispo,term);
@@ -437,6 +354,13 @@ public:
     const T2& getSubTypedTask(const QString &id) const {
         return const_cast<T2>(getSubTypedTask(id));
     }
+
+    class PreemptiveTasksIterationStrategy : public TasksIterationStrategy {
+        bool test(Task* tested) const override {
+            UnitaryTask* toTest = dynamic_cast<UnitaryTask*>(tested);
+            return toTest->isPreemptive();
+        }
+    };
 };
 
 class PreemptiveFactory : public UnitaryFactory <PreemptiveTask, PreemptiveFactory> {

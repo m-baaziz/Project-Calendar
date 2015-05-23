@@ -24,6 +24,7 @@ public:
     QString getInfo() const { return info; }
 };
 
+
 /*!
  * \brief The Duration class
  *

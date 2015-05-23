@@ -15,9 +15,9 @@ Handler<NonPreemptiveFactory> Singleton<NonPreemptiveFactory>::handler = Handler
 void Task::checkCompositionValidity() {
     CompositeFactory* cf = &(CompositeFactory::getInstance());
     CompositeTask* includer;
-    for (CompositeFactory::TasksIterator it = cf->getIterator(); !(it.isDone()); it.next()) {
-        includer = dynamic_cast<CompositeTask*>(&(it.current())); // here we can't use the TypedTasksIterator to get only composite Tasks because it will use a redefined pure virtual method, which may cause some trouble if this method is called during CompositeFactory destruction.
-        if (!includer) continue;  // includer=0 when we get this deleted task.
+    for (CompositeFactory::TypedTasksIterator it = cf->getTypedTasksIterator(); !(it.isDone()); it.next()) {
+        includer = &(it.current()); // here we can't use the TypedTasksIterator to get only composite Tasks because it will use a redefined pure virtual method, which may cause some trouble if this method is called during CompositeFactory destruction.
+        //if (!includer) continue;  // includer=0 when we get this deleted task.
         includer = includer->isSubTaskHere(this->getId());
         if (includer) {
             includer->removeSubTask(this->getId());
@@ -25,7 +25,6 @@ void Task::checkCompositionValidity() {
         }
     }
 }
-
 
 // PREEMPTIVE TASK
 
@@ -43,9 +42,7 @@ NonPreemptiveTask::~NonPreemptiveTask() {}
 
 CompositeTask::~CompositeTask() {
     CompositeFactory* cf = &(CompositeFactory::getInstance());
-    while(!(subTasks.empty())) {
-        cf->removeTask(subTasks.front());
-    }
+    while(!(subTasks.empty())) cf->removeTask(subTasks.front());
     subTasks.clear();
 }
 
@@ -72,10 +69,11 @@ CompositeTask* CompositeTask::isSubTaskHere(const QString &id) {
 }
 
 void CompositeTask::addSubTask(Task &t) {
+    CompositeTask* temp = 0;
     if (subTasks.empty() && t.getTaskType()==COMPOSITE && dynamic_cast<CompositeTask*>(&t)->getSubTasksArray().empty())
         throw CalendarException("Error : a composite Task can't include only composite tasks");
-    if (isSubTaskHere(t.getId()))
-        throw CalendarException("Error : sub-task "+t.getId()+" has already been added in "+getId());
+    if (temp = CompositeFactory::getInstance().isTaskIncluded(t.getId()))
+        throw CalendarException("Error : sub-task "+t.getId()+" has already been added in "+temp->getId());
     if ((t.getTaskType()==COMPOSITE &&dynamic_cast<CompositeTask*>(&t)->isSubTaskHere(this->getId()))) // This huge condition checks if this task includes "t" or if "t" is a composite task that includes this task.
         throw CalendarException("Error : The task "+t.getId()+" already includes the task "+this->getId());
     subTasks.push_back(&t);  // check if there is an unitary task at the end, and if this "this" is not included in the task's arborescence
@@ -83,7 +81,7 @@ void CompositeTask::addSubTask(Task &t) {
 
 
 Task& CompositeTask::getSubTask(const QString &id) {
-    for (CompositeFactory::TasksIterator it = CompositeFactory::getInstance().getIterator(this); !(it.isDone()); it.next()) {
+    for (TasksIterator it = this->getIterator(); !(it.isDone()); it.next()) {
         if (it.current().getId() == id) return it.current();
     }
     throw CalendarException("Error : sub-task "+id+" not found in "+getId());
@@ -97,5 +95,15 @@ void CompositeTask::removeSubTask(const QString &id) {
         }
     }
     throw CalendarException("Error : sub-task "+id+" not found in "+getId());
+}
+
+// COMPOSITE FACTORY
+
+CompositeTask* CompositeFactory::isTaskIncluded (const QString& id) {
+    CompositeTask* temp = 0;
+    for (TypedTasksIterator it = getTypedTasksIterator(); !(it.isDone()); it.next()) {
+        if (temp = it.current().isSubTaskHere(id)) return temp;
+    }
+    return 0;
 }
 

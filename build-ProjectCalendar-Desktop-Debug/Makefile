@@ -14,7 +14,7 @@ CC            = gcc
 CXX           = g++
 DEFINES       = -DQT_QML_DEBUG -DQT_DECLARATIVE_DEBUG -DQT_WIDGETS_LIB -DQT_XML_LIB -DQT_GUI_LIB -DQT_CORE_LIB
 CFLAGS        = -m64 -pipe -g -Wall -W -D_REENTRANT -fPIE $(DEFINES)
-CXXFLAGS      = -m64 -pipe -g -Wall -W -D_REENTRANT -fPIE $(DEFINES)
+CXXFLAGS      = -m64 -pipe -g -std=c++0x -Wall -W -D_REENTRANT -fPIE $(DEFINES)
 INCPATH       = -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I../ProjectCalendar -I/usr/include/qt5 -I/usr/include/qt5/QtWidgets -I/usr/include/qt5/QtXml -I/usr/include/qt5/QtGui -I/usr/include/qt5/QtCore -I. -I.
 LINK          = g++
 LFLAGS        = -m64
@@ -105,6 +105,7 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/default_pre.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/resolve_config.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/default_post.prf \
+		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/c++11.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/qml_debug.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/declarative_debug.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/unix/gdb_dwarf_index.prf \
@@ -200,6 +201,7 @@ Makefile: ../ProjectCalendar/ProjectCalendar.pro /usr/lib/x86_64-linux-gnu/qt5/m
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/default_pre.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/resolve_config.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/default_post.prf \
+		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/c++11.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/qml_debug.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/declarative_debug.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/unix/gdb_dwarf_index.prf \
@@ -266,6 +268,7 @@ Makefile: ../ProjectCalendar/ProjectCalendar.pro /usr/lib/x86_64-linux-gnu/qt5/m
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/default_pre.prf:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/resolve_config.prf:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/default_post.prf:
+/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/c++11.prf:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/qml_debug.prf:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/declarative_debug.prf:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/unix/gdb_dwarf_index.prf:
@@ -292,7 +295,7 @@ qmake_all: FORCE
 
 dist: 
 	@test -d .tmp/ProjectCalendar1.0.0 || mkdir -p .tmp/ProjectCalendar1.0.0
-	$(COPY_FILE) --parents $(SOURCES) $(DIST) .tmp/ProjectCalendar1.0.0/ && $(COPY_FILE) --parents ../ProjectCalendar/Calendar.h ../ProjectCalendar/Event.h ../ProjectCalendar/Programmation.h ../ProjectCalendar/Project.h ../ProjectCalendar/Task.h ../ProjectCalendar/Association.h .tmp/ProjectCalendar1.0.0/ && $(COPY_FILE) --parents ../ProjectCalendar/Task.cpp ../ProjectCalendar/Project.cpp ../ProjectCalendar/Programmation.cpp ../ProjectCalendar/Event.cpp ../ProjectCalendar/Calendar.cpp ../ProjectCalendar/main.cpp ../ProjectCalendar/Association.cpp .tmp/ProjectCalendar1.0.0/ && (cd `dirname .tmp/ProjectCalendar1.0.0` && $(TAR) ProjectCalendar1.0.0.tar ProjectCalendar1.0.0 && $(COMPRESS) ProjectCalendar1.0.0.tar) && $(MOVE) `dirname .tmp/ProjectCalendar1.0.0`/ProjectCalendar1.0.0.tar.gz . && $(DEL_FILE) -r .tmp/ProjectCalendar1.0.0
+	$(COPY_FILE) --parents $(SOURCES) $(DIST) .tmp/ProjectCalendar1.0.0/ && $(COPY_FILE) --parents ../ProjectCalendar/Calendar.h ../ProjectCalendar/Event.h ../ProjectCalendar/Programmation.h ../ProjectCalendar/Project.h ../ProjectCalendar/Task.h ../ProjectCalendar/Association.h ../ProjectCalendar/Singleton.h ../ProjectCalendar/Iterator.h .tmp/ProjectCalendar1.0.0/ && $(COPY_FILE) --parents ../ProjectCalendar/Task.cpp ../ProjectCalendar/Project.cpp ../ProjectCalendar/Programmation.cpp ../ProjectCalendar/Event.cpp ../ProjectCalendar/Calendar.cpp ../ProjectCalendar/main.cpp ../ProjectCalendar/Association.cpp .tmp/ProjectCalendar1.0.0/ && (cd `dirname .tmp/ProjectCalendar1.0.0` && $(TAR) ProjectCalendar1.0.0.tar ProjectCalendar1.0.0 && $(COMPRESS) ProjectCalendar1.0.0.tar) && $(MOVE) `dirname .tmp/ProjectCalendar1.0.0`/ProjectCalendar1.0.0.tar.gz . && $(DEL_FILE) -r .tmp/ProjectCalendar1.0.0
 
 
 clean:compiler_clean 
@@ -412,7 +415,9 @@ Task.o: ../ProjectCalendar/Task.cpp ../ProjectCalendar/Task.h \
 		/usr/include/qt5/QtCore/qdatastream.h \
 		/usr/include/qt5/QtCore/qregexp.h \
 		/usr/include/qt5/QtCore/qstringmatcher.h \
-		/usr/include/qt5/QtCore/QDebug
+		/usr/include/qt5/QtCore/QDebug \
+		../ProjectCalendar/Singleton.h \
+		../ProjectCalendar/Iterator.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o Task.o ../ProjectCalendar/Task.cpp
 
 Project.o: ../ProjectCalendar/Project.cpp 
@@ -740,6 +745,8 @@ main.o: ../ProjectCalendar/main.cpp ../ProjectCalendar/Calendar.h \
 		/usr/include/qt5/QtCore/qstringmatcher.h \
 		/usr/include/qt5/QtCore/QDebug \
 		../ProjectCalendar/Task.h \
+		../ProjectCalendar/Singleton.h \
+		../ProjectCalendar/Iterator.h \
 		../ProjectCalendar/Association.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o ../ProjectCalendar/main.cpp
 
@@ -825,7 +832,9 @@ Association.o: ../ProjectCalendar/Association.cpp ../ProjectCalendar/Association
 		/usr/include/qt5/QtCore/qdatastream.h \
 		/usr/include/qt5/QtCore/qregexp.h \
 		/usr/include/qt5/QtCore/qstringmatcher.h \
-		/usr/include/qt5/QtCore/QDebug
+		/usr/include/qt5/QtCore/QDebug \
+		../ProjectCalendar/Singleton.h \
+		../ProjectCalendar/Iterator.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o Association.o ../ProjectCalendar/Association.cpp
 
 ####### Install

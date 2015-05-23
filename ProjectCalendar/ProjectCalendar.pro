@@ -1,5 +1,6 @@
 QT += widgets
 QT += xml
+CONFIG += c++11
 
 SOURCES += \
     Task.cpp \
@@ -16,4 +17,6 @@ HEADERS += \
     Programmation.h \
     Project.h \
     Task.h \
-    Association.h
+    Association.h \
+    Singleton.h \
+    Iterator.h
