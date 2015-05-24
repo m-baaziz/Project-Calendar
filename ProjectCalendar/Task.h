@@ -3,6 +3,7 @@
 #include "Calendar.h"
 #include "Singleton.h"
 #include "Iterator.h"
+#include "Association.h"
 
 /*!
  * \file Task.h
@@ -57,6 +58,51 @@ public:
 typedef std::vector<Task*> TasksContainer;
 typedef Iterator<Task> TasksIterator;
 typedef IterationStrategy<Task> TasksIterationStrategy;
+
+// ******************** ASSOCIATIONS MANAGEMENT ***************************************
+
+class Association {
+    Task* predecessor;
+    Task* successor;
+
+    Association():predecessor(0),successor(0){}
+    Association(Task* p, Task* s): predecessor(p),successor(s){}
+    Association& operator=(const Association& a);
+    ~Association(){}
+
+    friend class AssociationManager;
+public:
+    Task* getPredecessor() const {return predecessor;}
+    Task* getSuccessor() const {return successor;}
+};
+
+typedef Iterator<Association> AssociationIterator;
+typedef std::vector<Association*> AssociationsContainer;
+
+class AssociationManager: public Singleton<AssociationManager>, public Aggregator<Association> {
+    AssociationsContainer assos;
+
+    AssociationManager():Aggregator<Association>(&assos){}
+    AssociationManager(const AssociationManager& a);
+    AssociationManager& operator=(const AssociationManager& a);
+    ~AssociationManager(){}
+    void fillQueue(std::queue<Task*>& q, TasksContainer tc);
+    bool isTaskXFollowedByY(Task* X,Task* Y);
+    void removeTaskAssociationLinks(Task* t);
+
+    friend class Singleton<AssociationManager>;
+    friend class Handler<AssociationManager>;
+    template<class anytask,class anyfactory>
+    friend class TaskFactory; // friendship to allow taskFactory to call removeTaskAssociationLinks when removing a task.
+
+public:
+    Association& addAssociation(Task* p, Task* s);  // many verifications to do
+    void removeAssociation(Task* p, Task* s);
+    TasksContainer getTaskPredecessors(Task* t);
+    TasksContainer getTaskSuccessors(Task* t);
+};
+
+// *************************************************************************************************************
 
 
 class UnitaryTask: public Task {
@@ -218,8 +264,12 @@ protected:
         }
         return 0;
     }
-    TasksContainer* getTasksArray() {
-        return tasks;
+
+    void checkAssociationValidity(Task* t) {
+        AssociationManager* am = AssociationManager::getInstance();
+        for (AssociationIterator it = am->getIterator(); !(it.isDone()); it.next()) {
+
+        }
     }
 
     friend class Singleton<F>;  //every Handler<Fa> is a friend of TaskFactory
@@ -263,7 +313,6 @@ public:
         return false;
     }
 
-    int i =0;
 
     bool isTaskHere(const QString& id) const {return findTask(id) != 0;}
     void load(const QString& f);
@@ -271,6 +320,7 @@ public:
     void removeTask(Task* t) {
         for (TasksContainer::iterator it = tasks->begin(); it!=tasks->end(); ++it) {
             if (t && *it==t) {
+                AssociationManager::getInstance().removeTaskAssociationLinks(*it);
                 (*it)->checkCompositionValidity();
                 delete *it;
                 break;

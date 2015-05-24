@@ -417,7 +417,8 @@ Task.o: ../ProjectCalendar/Task.cpp ../ProjectCalendar/Task.h \
 		/usr/include/qt5/QtCore/qstringmatcher.h \
 		/usr/include/qt5/QtCore/QDebug \
 		../ProjectCalendar/Singleton.h \
-		../ProjectCalendar/Iterator.h
+		../ProjectCalendar/Iterator.h \
+		../ProjectCalendar/Association.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o Task.o ../ProjectCalendar/Task.cpp
 
 Project.o: ../ProjectCalendar/Project.cpp 

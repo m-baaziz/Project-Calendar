@@ -32,8 +32,11 @@ int main() {
         compo.addSubTask(prem);
         compo.addSubTask(prem3);
         compo.addSubTask(cf->getTask("LG62"));
-        compo.addSubTask(ct1);
-        AssociationManager::getInstance();
+        //compo.addSubTask(ct1);
+        AssociationManager* am = &(AssociationManager::getInstance());
+        am->addAssociation(&ct1,&compo);
+        //am->addAssociation(&compo,&ct1);
+        cf->removeTask(&ct1);
         //f->removeTask(&(cnp->getSubTypedTask("LG62")));
         qDebug()<<"DEUXIEME ENUMERATION";
         for (Iterator<UnitaryTask> it = cp->getIterator<UnitaryTask>(&Strat2); !(it.isDone()); it.next()) { //we can improve the selection of task's subtype to enumerate
