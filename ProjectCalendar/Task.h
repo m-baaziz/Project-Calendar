@@ -24,15 +24,14 @@ class Task{
     Task& operator=(const Task& t);
 
 protected:
-    Task(const QString& id, const QString& t, const Duration& dur, const QDate& dispo, const QDate& term, const enum TaskType& type):
-        identifier(id), title(t), duration(dur), disponibility(dispo), deadline(term), taskType(type), isCompleted(false){}
+    Task(const QString& id, const QString& t, const Duration& dur, const QDate& dispo, const QDate& term):
+        identifier(id), title(t), duration(dur), disponibility(dispo), deadline(term), isCompleted(false){}
     virtual ~Task(){}
     QString identifier;
     QString title;
     Duration duration;
     QDate disponibility;
     QDate deadline;
-    enum TaskType taskType;
     bool isCompleted;
 
     void setCompleted() {isCompleted = true;}   // when a programmation has been done, ProgrammationManager has to set the task as completed.
@@ -46,7 +45,7 @@ public:
     Duration getDuration() const {return duration;}
     QDate getDisponibility() const {return disponibility;}
     QDate getDeadline() const {return deadline;}
-    enum TaskType getTaskType() const {return taskType;}
+    virtual enum TaskType getTaskType() const =0;
 
     void setId(const QString& id) {identifier=id;}
     void setTitle(const QString& t) {title=t;}
@@ -69,17 +68,17 @@ class UnitaryTask: public Task {
     UnitaryTask(const UnitaryTask& t);
     UnitaryTask& operator=(const UnitaryTask& t);
 protected:
-    UnitaryTask(const QString& id, const QString& t, const Duration& dur, const QDate& dispo, const QDate& term, const enum UnitarySubTypes& subtype):
-        Task(id,t,dur,dispo,term,UNITARY), subType(subtype){}
+    UnitaryTask(const QString& id, const QString& t, const Duration& dur, const QDate& dispo, const QDate& term):
+        Task(id,t,dur,dispo,term){}
     virtual ~UnitaryTask(){}
-    enum UnitarySubTypes subType;
+    enum TaskType getTaskType() const {return UNITARY;}
 
     template<class T,class F>
     friend class TaskFactory;
 
 public:
     virtual bool isPreemptive() const=0;
-    enum UnitarySubTypes getUnitarySubType() const {return subType;}
+    virtual enum UnitarySubTypes getUnitarySubType() const = 0;
 };
 
 // A Preemptive Task can not be turned into a NonPreemptive Task. The same in the other way.
@@ -89,14 +88,15 @@ class PreemptiveTask: public UnitaryTask {
     PreemptiveTask& operator=(const PreemptiveTask& t);
 protected:
     PreemptiveTask(const QString& id, const QString& t, const Duration& dur, const QDate& dispo, const QDate& term):
-        UnitaryTask(id,t,dur,dispo,term,PREEMPTIVE), progression(0){}
+        UnitaryTask(id,t,dur,dispo,term), progression(0){}
     virtual ~PreemptiveTask();
-    float progression;                 // when a programmation is set for a preemptive task, programmationManager has to know much this programmation is supposed to increase the task's progression
+    float progression;                 // when a programmation is set for a preemptive task, programmationManager has to know how much this programmation is supposed to increase the task's progression
                                        // when a programmation is completed, it will increase the preemptive task's progression, if progression reaches 100, ProgrammtionManager sets the task as completed.
     template<class T,class F>
     friend class UnitaryFactory;
 public:
     bool isPreemptive() const {return true;}
+    enum UnitarySubTypes getUnitarySubType() const {return PREEMPTIVE;}
     //void setInterruption();
     void setProgression(const float& p) {
         if (p < 0 || p > 100) throw CalendarException("Error : Invalid progression value (has to be >= 0 and <= 100)");
@@ -110,13 +110,14 @@ class NonPreemptiveTask: public UnitaryTask {
     NonPreemptiveTask& operator=(const PreemptiveTask& t);
 protected:
     NonPreemptiveTask(const QString& id, const QString& t, const Duration& dur, const QDate& dispo, const QDate& term):
-        UnitaryTask(id,t,dur,dispo,term,NOT_PREEMPTIVE){}
+        UnitaryTask(id,t,dur,dispo,term){}
     virtual ~NonPreemptiveTask();
 
     template<class T,class F>
     friend class UnitaryFactory;
 public:
     bool isPreemptive() const {return false;}
+    enum UnitarySubTypes getUnitarySubType() const {return NOT_PREEMPTIVE;}
 };
 
 
@@ -126,6 +127,7 @@ class CompositeTask: public Task, public Aggregator<Task> {
 
 protected:
     TasksContainer  subTasks;
+    enum TaskType getTaskType() const {return COMPOSITE;}
 
     /*!
      * \brief The SubTaskCouple struct
@@ -140,7 +142,7 @@ protected:
     };
 
     CompositeTask(const QString& id, const QString& t, const Duration& dur, const QDate& dispo, const QDate& term):
-        Task(id,t,dur,dispo,term,COMPOSITE),subTasks(TasksContainer()),Aggregator(&subTasks){}
+        Task(id,t,dur,dispo,term),subTasks(TasksContainer()),Aggregator(&subTasks){}
     virtual ~CompositeTask(); //ask CompositeFactory to destroy the subTasks
     void fillQueue(std::queue<SubTaskCouple>& qu,const TasksContainer& st,CompositeTask* includer) const;
 
