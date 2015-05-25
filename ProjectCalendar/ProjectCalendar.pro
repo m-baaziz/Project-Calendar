@@ -9,7 +9,8 @@ SOURCES += \
     Event.cpp \
     Calendar.cpp \
     main.cpp \
-    Association.cpp
+    Association.cpp \
+    TaskManager.cpp
 
 HEADERS += \
     Calendar.h \
@@ -19,4 +20,5 @@ HEADERS += \
     Task.h \
     Association.h \
     Singleton.h \
-    Iterator.h
+    Iterator.h \
+    TaskManager.h

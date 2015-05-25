@@ -1,38 +1,10 @@
 #include "Task.h"
+#include "TaskManager.h"
 
-TasksContainer* TasksArray::tasks = new TasksContainer;
-unsigned int TasksArray::nbFactories = 0;
-
-template<>
-Handler<CompositeFactory> Singleton<CompositeFactory>::handler = Handler<CompositeFactory>();
-template<>
-Handler<PreemptiveFactory> Singleton<PreemptiveFactory>::handler = Handler<PreemptiveFactory>();
-template<>
-Handler<NonPreemptiveFactory> Singleton<NonPreemptiveFactory>::handler = Handler<NonPreemptiveFactory>();
-
-// TASK
-
-void Task::checkCompositionValidity() {
-    CompositeFactory* cf = &(CompositeFactory::getInstance());
-    CompositeTask* includer;
-    for (CompositeFactory::TypedTasksIterator it = cf->getTypedTasksIterator(); !(it.isDone()); it.next()) {
-        includer = &(it.current()); // here we can't use the TypedTasksIterator to get only composite Tasks because it will use a redefined pure virtual method, which may cause some trouble if this method is called during CompositeFactory destruction.
-        //if (!includer) continue;  // includer=0 when we get this deleted task.
-        includer = includer->isSubTaskHere(this->getId());
-        if (includer) {
-            includer->removeSubTask(this->getId());
-            return;
-        }
-    }
-}
 
 // PREEMPTIVE TASK
 
 PreemptiveTask::~PreemptiveTask() {}
-
-void PreemptiveTask::setInterruption() {
-    // to do : manage interruptions
-}
 
 // NONPREEMPTIVE TASK
 
@@ -99,11 +71,4 @@ void CompositeTask::removeSubTask(const QString &id) {
 
 // COMPOSITE FACTORY
 
-CompositeTask* CompositeFactory::isTaskIncluded (const QString& id) {
-    CompositeTask* temp = 0;
-    for (TypedTasksIterator it = getTypedTasksIterator(); !(it.isDone()); it.next()) {
-        if (temp = it.current().isSubTaskHere(id)) return temp;
-    }
-    return 0;
-}
 

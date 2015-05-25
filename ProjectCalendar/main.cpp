@@ -1,5 +1,6 @@
 #include "Calendar.h"
 #include "Task.h"
+#include "TaskManager.h"
 #include "Association.h"
 #include <QDebug>
 
