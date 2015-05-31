@@ -12,7 +12,7 @@ int main() {
         CompositeFactory* cf = &(CompositeFactory::getInstance());
         NonPreemptiveFactory* cnp = &(NonPreemptiveFactory::getInstance());
         PreemptiveFactory* cp = &(PreemptiveFactory::getInstance());
-        CompositeTask& compo = cf->addTask("LO21","Programmation Objet",d1,QDate(2015,03,15),QDate(2017,02,13));
+        CompositeTask& compo = cf->addTask("LO21","Programmation Objet",d1,QDate(2011,03,15),QDate(2050,02,13));
         PreemptiveTask& prem=cp->addTask("SI28","Ecriture multimedia",Duration(1,30),QDate(2013,02,12),QDate(2045,05,06));
         NonPreemptiveTask& prem2=cnp->addTask("TEST","Ecriture TEST",Duration(1,30),QDate(2013,02,12),QDate(2045,05,06));
         NonPreemptiveTask& prem3=cnp->addTask("TesTYY","TESTERRDZDZD",Duration(1,30),QDate(2013,02,12),QDate(2045,05,06));

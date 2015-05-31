@@ -14,6 +14,7 @@ bool Project::isTaskAdded(Task *t) {
 
 Task& Project::addTask(Task &t) {
     if (isTaskAdded(&t)) throw CalendarException("Error : Task "+t.getId()+" has already been added to the project "+getId());
+    
     tasks.push_back(&t);
     return t;
 }
@@ -23,3 +24,5 @@ void Project::removeTask(const QString &id) {
         if ((*it)->getId() == id) tasks.erase(it);
     }
 }
+
+

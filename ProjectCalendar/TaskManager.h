@@ -148,6 +148,16 @@ public:
         }
     };
 
+    class NotIncludedTasksIterationStrategy : public TasksIterationStrategy {
+        bool test(Task *tested) const override {
+            if (!tested) return false;
+            for (TasksIterator it = this->template getIterator<CompositeTask>(); !(it.isDone()); it.next()) {
+                if ((*it)->isSubTaskHere(toTest->getId())) return false;
+            }
+            return true;
+        }
+    };
+
 
     TypedTasksIterator getTypedTasksIterator(const TasksIterationStrategy* strategy = 0) {
         return this->template getIterator<T>(strategy);
@@ -219,6 +229,7 @@ public:
             return toTest->isPreemptive();
         }
     };
+
 };
 
 class PreemptiveFactory : public UnitaryFactory <PreemptiveTask, PreemptiveFactory> {

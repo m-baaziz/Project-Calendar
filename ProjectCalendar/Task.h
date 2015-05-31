@@ -25,7 +25,9 @@ class Task{
 
 protected:
     Task(const QString& id, const QString& t, const Duration& dur, const QDate& dispo, const QDate& term):
-        identifier(id), title(t), duration(dur), disponibility(dispo), deadline(term), isCompleted(false){}
+        identifier(id), title(t), duration(dur), disponibility(dispo), deadline(term), isCompleted(false){
+        if (dispo>term) throw CalendarException("Error : a Task disponibility can't come after its deadline");
+    }
     virtual ~Task(){}
     QString identifier;
     QString title;
@@ -38,6 +40,7 @@ protected:
                                                 // a programmationManager can't really set a programmation for a CompositeTask, it has to set them for its subtasks
     template<class T,class F>                   // a programmationManager when setting a programmation has to check Associations constraints.
     friend class TaskFactory;                   // completed tasks have special treatments (special displaying for exemple ...)
+                                                // when a task is completed, check if it is a final task of a project, of yes, then set the Project as completed.
 
 public:
     QString getId() const {return identifier;}
@@ -57,11 +60,6 @@ public:
 typedef std::vector<Task*> TasksContainer;
 typedef Iterator<Task> TasksIterator;
 typedef IterationStrategy<Task> TasksIterationStrategy;
-
-// ******************** ASSOCIATIONS MANAGEMENT ***************************************
-
-
-// *************************************************************************************************************
 
 
 class UnitaryTask: public Task {
@@ -110,7 +108,7 @@ class NonPreemptiveTask: public UnitaryTask {
     NonPreemptiveTask& operator=(const PreemptiveTask& t);
 protected:
     NonPreemptiveTask(const QString& id, const QString& t, const Duration& dur, const QDate& dispo, const QDate& term):
-        UnitaryTask(id,t,dur,dispo,term){}
+        UnitaryTask(id,t,dur,dispo,term){if(dur.getDurationInHours()>12) throw CalendarException("Error : a non preemptive Task can't last more than 12 hours");}
     virtual ~NonPreemptiveTask();
 
     template<class T,class F>
