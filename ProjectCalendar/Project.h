@@ -1,11 +1,13 @@
 #ifndef PROJECT_H
 #define PROJECT_H
-#include "TaskManager.h"
-
+#include "Task.h"
+#include "Singleton.h"
 
 class Project : public Aggregator<Task> {
     Project(const Project& p);
     Project& operator=(const Project& p);
+
+    void clearArray() {tasks.clear();}
 protected:
     QString identifier;
     QString title;
@@ -15,12 +17,11 @@ protected:
     bool isCompleted;
     TasksContainer tasks;
 
+    Project(const QString& id, const QString& t, const Duration& dur, const QDate& dispo, const QDate& term):identifier(id), title(t), duration(dur), disponibility(dispo), deadline(term), isCompleted(false),Aggregator<Task>(&tasks){
+        if (dispo>term) throw CalendarException("Error : a Project disponibility can't come after its deadline");
+    }
+    virtual ~Project(){}
     void setCompleted() {isCompleted = true;}
-    Project(const QString& id, const QString& t, const Duration& dur, const QDate& dispo, const QDate& term) :
-        identifier(id), title(t), duration(dur), disponibility(dispo), deadline(term), isCompleted(false),Aggregator<Task>(&tasks){
-                if (dispo>term) throw CalendarException("Error : a Project disponibility can't come after its deadline");
-            }
-    virtual ~Project();
     bool isTaskAdded(Task* t); // also checks with composition ...
 
     friend class ProjectFactory;
@@ -53,21 +54,28 @@ public:
 
 typedef std::vector<Project*> ProjectsContainer;
 
-class ProjectFactory : Singleton<ProjectFactory>, Aggregator<Project> {
+class ProjectFactory : public Singleton<ProjectFactory>, public Aggregator<Project> {
     ProjectFactory(const ProjectFactory& pm);
     ProjectFactory& operator=(const ProjectFactory& pm);
 protected:
     ProjectsContainer projects;
     ProjectFactory(): Aggregator<Project>(&projects){}
     virtual ~ProjectFactory();
+    Project* findProject(const QString& id);
 
     friend class Singleton<ProjectFactory>;
     friend class Handler<ProjectFactory>;
 public:
-    bool isTaskavalaible(Task* t) const;
+    void load(const QString& f);
+    void save(const QString& f);
+
+    bool isProjectHere(const QString& id);
+    bool isProjectHere(const Project* const p);
+    bool isTaskavalaible(Task* t);
     Project& addProject(const QString& id, const QString& t, const Duration& dur, const QDate& dispo, const QDate& term);
     void removeProject(Project* p);
     Project& getProject(const QString& id);
+
 };
 
 #endif // PROJECT_H

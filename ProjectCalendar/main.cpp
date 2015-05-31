@@ -2,6 +2,7 @@
 #include "Task.h"
 #include "TaskManager.h"
 #include "Association.h"
+#include "Project.h"
 #include <QDebug>
 
 int main() {
@@ -40,9 +41,19 @@ int main() {
         cf->removeTask(&ct1);
         //f->removeTask(&(cnp->getSubTypedTask("LG62")));
         qDebug()<<"DEUXIEME ENUMERATION";
-        for (Iterator<UnitaryTask> it = cp->getIterator<UnitaryTask>(&Strat2); !(it.isDone()); it.next()) { //we can improve the selection of task's subtype to enumerate
+        for (Iterator<PreemptiveTask> it = cp->getIterator<PreemptiveTask>(); !(it.isDone()); it.next()) { //we can improve the selection of task's subtype to enumerate
             qDebug()<<it.current().getId();
         }
+        ProjectFactory* pf = &(ProjectFactory::getInstance());
+        Project& pro1 = pf->addProject("Calendar","Project Agenda Calendar",Duration(1,30),QDate(2013,02,12),QDate(2045,05,06));
+        qDebug()<<"premier project : "<<pro1.getTitle();
+        CompositeFactory::ProjectValidTasksIterationStrategy Strat3;
+        qDebug()<<"Les Valides : ";
+        for (TasksIterator it = cf->getIterator(&Strat3); !(it.isDone()); it.next()) {
+            qDebug()<<it.current().getId();
+        }
+        pro1.addTask(cp->getTask("NF17"));
+        pf->removeProject(&pro1);
         cf->freeInstance();
         cp->freeInstance();
         cnp->freeInstance();

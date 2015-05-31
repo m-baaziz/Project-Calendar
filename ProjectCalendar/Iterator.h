@@ -71,7 +71,7 @@ public:
 
     template<class IteratorItemType = ItemType>
     Iterator<IteratorItemType> getIterator(const IterationStrategy<ItemType>* strategy = 0) { //here take out compositeTask parameter and override this method in taskFactory with a compositeTask parameter/ OR : make composite tasks agregators
-        if (items->empty()) throw CalendarException("Error : Trying to get iterator on an empty Aggregator");
+        //if (items->empty()) throw CalendarException("Error : Trying to get iterator on an empty Aggregator");
         std::vector<IteratorItemType*> toSend;
         IteratorItemType* temp = 0;
         for (typename ItemsContainer::iterator it = items->begin(); it!=items->end(); ++it) {

@@ -49,7 +49,7 @@ void CompositeTask::addSubTask(Task &t) {
     if ((t.getTaskType()==COMPOSITE &&dynamic_cast<CompositeTask*>(&t)->isSubTaskHere(this->getId()))) // This huge condition checks if this task includes "t" or if "t" is a composite task that includes this task.
         throw CalendarException("Error : The task "+t.getId()+" already includes the task "+this->getId());
     if (t.getDisponibility()<this->getDisponibility() || t.getDeadline()>this->getDeadline())
-        throw CalendarException("Error : Task "+t.getId()+" can't be included in "+this->getId()+" because the subtask disponibility/deadline is not compatible with parent task");
+        throw CalendarException("Error : Task "+t.getId()+" can't be included in composite Task "+this->getId()+" because the subtask disponibility/deadline is not compatible with the parent task disponibility/deadline");
     subTasks.push_back(&t);  // check if there is an unitary task at the end, and if this "this" is not included in the task's arborescence
 }
 

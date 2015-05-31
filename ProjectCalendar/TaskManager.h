@@ -3,7 +3,7 @@
 #include "Task.h"
 #include "Singleton.h"
 #include "Association.h"
-
+#include "Project.h"
 
 class TasksArray {
 private:
@@ -72,10 +72,13 @@ protected:
         }
     }
 
-    void checkAssociationValidity(Task* t) {
-        AssociationManager* am = AssociationManager::getInstance();
-        for (AssociationIterator it = am->getIterator(); !(it.isDone()); it.next()) {
-
+    void checkProjectValidity(Task* t) {
+        for (Iterator<Project> it = ProjectFactory::getInstance().getIterator(); !(it.isDone()); it.next()) {
+            if ((it.current()).isItemHere(t)) {
+                qDebug()<<"to kill :"<<t->getId();
+                it.current().removeTask(t->getId());
+                return;
+            }
         }
     }
 
@@ -113,9 +116,9 @@ public:
         return const_cast<T>(getTypedTask(id));
     }
 
-    bool isTaskHere(const Task* const id) const {
+    bool isTaskHere(const Task* const t) const {
         for (TasksContainer::iterator it = tasks->begin(); it!=tasks->end(); ++it) {
-            if (id==*it) return true;
+            if (t==*it) return true;
         }
         return false;
     }
@@ -127,6 +130,7 @@ public:
     void removeTask(Task* t) {
         for (TasksContainer::iterator it = tasks->begin(); it!=tasks->end(); ++it) {
             if (t && *it==t) {
+                checkProjectValidity(*it);
                 AssociationManager::getInstance().removeTaskAssociationLinks(*it);
                 checkCompositionValidity(*it);
                 delete *it;
@@ -148,16 +152,6 @@ public:
         }
     };
 
-    class NotIncludedTasksIterationStrategy : public TasksIterationStrategy {
-        bool test(Task *tested) const override {
-            if (!tested) return false;
-            for (TasksIterator it = this->template getIterator<CompositeTask>(); !(it.isDone()); it.next()) {
-                if ((*it)->isSubTaskHere(toTest->getId())) return false;
-            }
-            return true;
-        }
-    };
-
 
     TypedTasksIterator getTypedTasksIterator(const TasksIterationStrategy* strategy = 0) {
         return this->template getIterator<T>(strategy);
@@ -175,6 +169,33 @@ protected:
     friend class Singleton<CompositeFactory>;
     friend class Handler<CompositeFactory>;
 public:
+    /*!
+     * \brief The NotIncludedTasksIterationStrategy class
+     * Strategy that can be used to iterate on all Tasks that are not included in any Composite Task.
+     * It can be used for exemple propose the different tasks that can be added to a project.
+     */
+    class NotIncludedTasksIterationStrategy : public TasksIterationStrategy {
+    protected:
+        bool test(Task *tested) const override {
+            if (!tested) return false;
+            if (getInstance().isTaskIncluded(tested->getId())) return false;
+            return true;
+        }
+    };
+
+    /*!
+     * \brief The ProjectValidTasksIterationStrategy class
+     * This strategy can be used to list every Tasks that can be added to a project (tasks that are not
+       included in any composite Task, and tasks that were not already added to a project).
+     */
+    class ProjectValidTasksIterationStrategy : public TasksIterationStrategy {
+        bool test(Task *tested) const {
+            if (!(getInstance().isTaskIncluded(tested->getId())) && ProjectFactory::getInstance().isTaskavalaible(tested))
+                return true;
+            else return false;
+        }
+    };
+
     CompositeTask* isTaskIncluded (const QString& id);
     enum TaskType specificTaskType() const override {return COMPOSITE;}
 };
