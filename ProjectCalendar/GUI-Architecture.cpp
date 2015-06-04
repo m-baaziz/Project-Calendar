@@ -1,6 +1,8 @@
 #include "GUI-Architecture.h"
 
-
+QStandardItemModel* MainWindow::projectsModel = new QStandardItemModel();
+QStandardItemModel* MainWindow::eventsModel = new QStandardItemModel();
+QStandardItemModel* MainWindow::independentTasksModel = new QStandardItemModel();
 
 
 MainWindow::MainWindow(QWidget *parent): QWidget(parent) {
@@ -30,13 +32,10 @@ MainWindow::MainWindow(QWidget *parent): QWidget(parent) {
     // in itemsMenuLayer
 
     itemTypeSelector = new MyComboBox(this);
-    projectsModel = new QStandardItemModel(this);
-    eventsModel = new QStandardItemModel(this);
-    independentTasksModel = new QStandardItemModel(this);
     projectsTree = new QTreeView(this);
     eventsTree = new QTreeView(this);
     independentTasksTree = new QTreeView(this);
-    projectsTree->setModel(projectsModel);
+    projectsTree->setModel(MainWindow::projectsModel);
     independentTasksTree->setModel(independentTasksModel);
     //eventsTree->setModel(eventsModel);
     projectsTree->hide();
@@ -180,11 +179,11 @@ NewProjectForm::NewProjectForm(QWidget *parent) : QDialog(parent) {
     deadline = new QDateEdit(this);
     tasks = new QListView(this);
     tasks->setSelectionMode(QAbstractItemView::MultiSelection);
-    MainWindow* tempParent = dynamic_cast<MainWindow*>(parent);
-    addTasks = new NewTaskB("New Tasks",tempParent);
+    MainWindow* castedParent = dynamic_cast<MainWindow*>(parent);
+    addTasks = new NewTaskB("New Tasks",this);
 
 
-    tasks->setModel(dynamic_cast<MainWindow*>(parent)->independentTasksModel);
+    tasks->setModel(MainWindow::independentTasksModel);
 
     identifierL = new QLabel("ID : ",this);
     titleL = new QLabel("title : ",this);
@@ -216,14 +215,14 @@ try {
     Duration dur = Duration(duration->time().hour(),duration->time().minute());
     QDate dispo = disponibility->date();
     QDate term = deadline->date();
-    MainWindow* castedParent = dynamic_cast<MainWindow*>(this->parent());
+    MainWindow* castedParent = dynamic_cast<MainWindow*>(QWidget::window());
 
     NonPreemptiveFactory* npf = &(NonPreemptiveFactory::getInstance());
     ProjectFactory* pf = &(ProjectFactory::getInstance());
     Project& proj = pf->addProject(id,tit,dur,dispo,term);
 
     foreach (const QModelIndex &index,tasks->selectionModel()->selectedIndexes())
-          proj.addTask(npf->getTask(castedParent->independentTasksModel->itemFromIndex(index)->text()));
+          proj.addTask(npf->getTask(MainWindow::independentTasksModel->itemFromIndex(index)->text()));
 
 
     castedParent->refreshIndependentTasksModel();
@@ -239,6 +238,10 @@ catch
     }
 
     this->destroy();
+}
+
+NewTaskB::NewTaskB(const QString& text, QWidget* parent):QPushButton(text,parent) {
+    connect(this, SIGNAL(clicked()),this,SLOT(popTaskForm()));
 }
 
 void NewTaskB::popTaskForm(){
@@ -259,10 +262,10 @@ NewTaskForm::NewTaskForm(QWidget *parent) : QDialog(parent) {
     deadline = new QDateEdit(this);
     taskType = new QComboBox(this);
     tasks = new QListView(this);
-    tempi = new QStandardItemModel(this);
     tasks->setSelectionMode(QAbstractItemView::MultiSelection);
+    addTasks = new NewTaskB("New Tasks",this);
 
-    tasks->setModel(tempi);
+    tasks->setModel(MainWindow::independentTasksModel);
 
     identifierL = new QLabel("ID : ",this);
     titleL = new QLabel("title : ",this);
@@ -284,6 +287,7 @@ NewTaskForm::NewTaskForm(QWidget *parent) : QDialog(parent) {
     formLayout->addRow(deadlineL,deadline);
     formLayout->addRow(taskTypeL,taskType);
     formLayout->addRow(tasksL,tasks);
+    formLayout->addRow(addTasks);
     formLayout->addRow(buttonBox);
 
     connect(taskType,SIGNAL(currentIndexChanged(QString)),this,SLOT(showTasksToChoose(QString)));
@@ -297,10 +301,12 @@ void NewTaskForm::showTasksToChoose(const QString &index) {
     if (index == "Composite") {
         tasks->show();
         tasksL->show();
+        addTasks->show();
     }
     else {
         tasks->hide();
         tasksL->hide();
+        addTasks->hide();
     }
 }
 
@@ -313,14 +319,13 @@ try {
     QDate dispo = disponibility->date();
     QDate term = deadline->date();
     QString tatype = taskType->currentText();
-    QStringList tasksIds;
     MainWindow* castedParent = dynamic_cast<MainWindow*>(this->parent());
 
     if (tatype == "Composite") {
         CompositeFactory* factory = &(CompositeFactory::getInstance());
         CompositeTask& ct = factory->addTask(id,tit,dur,dispo,term);
         foreach (const QModelIndex &index,tasks->selectionModel()->selectedIndexes())
-                ct.addSubTask(factory->getTask(castedParent->independentTasksModel->itemFromIndex(index)->text()));
+                ct.addSubTask(factory->getTask(MainWindow::independentTasksModel->itemFromIndex(index)->text()));
     }
     else {
         if (tatype == "Preemptive") {

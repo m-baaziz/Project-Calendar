@@ -45,9 +45,7 @@ public slots:
 class NewTaskB : public QPushButton {
     Q_OBJECT
 public:
-    NewTaskB(const QString& text, QWidget* parent=0):QPushButton(text,parent) {
-        connect(this, SIGNAL(clicked()),this,SLOT(popTaskForm()));
-    }
+    NewTaskB(const QString& text, QWidget* parent=0);
 public slots:
     void popTaskForm();
 };
@@ -104,6 +102,7 @@ class NewTaskForm : public QDialog {
     QDateEdit* deadline;
     QComboBox* taskType;
     QListView* tasks;
+    NewTaskB* addTasks;
 
     QLabel* identifierL;
     QLabel* titleL;
@@ -167,9 +166,9 @@ class MainWindow : public QWidget {
 public:
     MainWindow(QWidget* parent = 0);
 
-    QStandardItemModel* projectsModel;
-    QStandardItemModel* eventsModel;
-    QStandardItemModel* independentTasksModel;
+    static QStandardItemModel* projectsModel;
+    static QStandardItemModel* eventsModel;
+    static QStandardItemModel* independentTasksModel;
 
 public slots:
     void refreshProjectsModel();
@@ -179,5 +178,6 @@ public slots:
     void showIndependentTasksInMenu();
     //void showEventsInMenu();
 };
+
 
 #endif // GUIARCHITECTURE_H
