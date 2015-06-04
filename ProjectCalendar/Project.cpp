@@ -25,7 +25,10 @@ Task& Project::addTask(Task &t) {
 
 void Project::removeTask(const QString &id) {
     for (TasksContainer::iterator it = tasks.begin(); it != tasks.end(); ++it) {
-        if ((*it)->getId() == id) tasks.erase(it);
+        if ((*it)->getId() == id) {
+            tasks.erase(it);
+            return;
+        }
     }
 }
 

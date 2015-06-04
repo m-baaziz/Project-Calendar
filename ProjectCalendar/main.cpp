@@ -3,11 +3,21 @@
 #include "TaskManager.h"
 #include "Association.h"
 #include "Project.h"
+#include "GUI-Architecture.h"
 #include <QDebug>
 
-int main() {
+#include <QApplication>
+#include <QWidget>
+#include <QPushButton>
+#include <QLineEdit>
+#include <QTextEdit>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
+#include <QFileDialog>
+
+int main(int argc, char *argv[]) {
     QTextStream cout(stdout, QIODevice::WriteOnly);
-    try{
+
         Duration d1(34);
         cout<<d1<<"\n";
         CompositeFactory* cf = &(CompositeFactory::getInstance());
@@ -38,12 +48,13 @@ int main() {
         AssociationManager* am = &(AssociationManager::getInstance());
         am->addAssociation(&ct1,&compo);
         //am->addAssociation(&compo,&ct1);
-        cf->removeTask(&ct1);
+        //cf->removeTask(&ct1);
         //f->removeTask(&(cnp->getSubTypedTask("LG62")));
         qDebug()<<"DEUXIEME ENUMERATION";
         for (Iterator<PreemptiveTask> it = cp->getIterator<PreemptiveTask>(); !(it.isDone()); it.next()) { //we can improve the selection of task's subtype to enumerate
             qDebug()<<it.current().getId();
         }
+        //compo.addSubTask(ct1);
         ProjectFactory* pf = &(ProjectFactory::getInstance());
         Project& pro1 = pf->addProject("Calendar","Project Agenda Calendar",Duration(1,30),QDate(2013,02,12),QDate(2045,05,06));
         qDebug()<<"premier project : "<<pro1.getTitle();
@@ -53,13 +64,15 @@ int main() {
             qDebug()<<it.current().getId();
         }
         pro1.addTask(cp->getTask("NF17"));
-        pf->removeProject(&pro1);
+        /*pf->removeProject(&pro1);
         cf->freeInstance();
         cp->freeInstance();
-        cnp->freeInstance();
-    }
-    catch
-    (CalendarException error) {cout<<error.getInfo();}
+        cnp->freeInstance();*/
 
-    return 0;
+
+    QApplication app(argc, argv);
+    MainWindow wid;
+    wid.show();
+
+    return app.exec();
 }

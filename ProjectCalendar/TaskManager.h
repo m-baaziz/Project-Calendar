@@ -75,7 +75,6 @@ protected:
     void checkProjectValidity(Task* t) {
         for (Iterator<Project> it = ProjectFactory::getInstance().getIterator(); !(it.isDone()); it.next()) {
             if ((it.current()).isItemHere(t)) {
-                qDebug()<<"to kill :"<<t->getId();
                 it.current().removeTask(t->getId());
                 return;
             }
