@@ -43,6 +43,9 @@ Association& AssociationManager::addAssociation(Task* p, Task* s) {
     if (isTaskXFollowedByY(s,p)) throw CalendarException("Error : "+p->getId()+" can't preceed "+s->getId()+" because "+s->getId()+" is already followed by "+p->getId());
     if (isTaskXFollowedByY(p,s)) throw CalendarException("Error : "+s->getId()+" has already been added as a successor of "+p->getId());
     if (s->getTaskType()==COMPOSITE && dynamic_cast<CompositeTask*>(s)->isSubTaskHere(p->getId())) throw CalendarException("a sub-task can't preceed its composite task");
+    QDate temp = p->getDisponibility();
+    temp.addDays(p->getDuration().getDurationInHours()/24);
+    if (temp > s->getDeadline()) throw CalendarException("Error : "+p->getId()+" can't preceed "+s->getId()+" because it can't be realized before its successor's deadline");
     Association* toAdd = new Association(p,s);
     assos.push_back(toAdd);
     return *toAdd;

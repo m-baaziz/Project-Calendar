@@ -26,6 +26,7 @@ class Task{
 protected:
     Task(const QString& id, const QString& t, const Duration& dur, const QDate& dispo, const QDate& term):
         identifier(id), title(t), duration(dur), disponibility(dispo), deadline(term), isCompleted(false){
+        if (id.size()==0 || t.size()==0) throw CalendarException("Error : a Task has to have an id and a title");
         if (dispo>term) throw CalendarException("Error : a Task disponibility can't come after its deadline");
     }
     virtual ~Task(){}
@@ -148,6 +149,15 @@ protected:
     friend class TaskFactory;
 
 public:
+    /*!
+     * \brief isValidSubTask
+     * \param t
+     * \return
+     * This method return true if the task t would be a valid subtask and throws an error
+       otherwise.
+     */
+    bool isValidSubTask(Task& t);
+
     /*!
      * \brief addSubTask
      * the subtask has to be created before, this method only adds the address

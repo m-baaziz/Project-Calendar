@@ -7,7 +7,6 @@ class Project : public Aggregator<Task> {
     Project(const Project& p);
     Project& operator=(const Project& p);
 
-    void clearArray() {tasks.clear();}
 protected:
     QString identifier;
     QString title;
@@ -18,9 +17,10 @@ protected:
     TasksContainer tasks;
 
     Project(const QString& id, const QString& t, const Duration& dur, const QDate& dispo, const QDate& term):identifier(id), title(t), duration(dur), disponibility(dispo), deadline(term), isCompleted(false),Aggregator<Task>(&tasks){
+        if (id.size()==0 || t.size()==0) throw CalendarException("Error : a Project has to have an id and a title");
         if (dispo>term) throw CalendarException("Error : a Project disponibility can't come after its deadline");
     }
-    virtual ~Project(){}
+    virtual ~Project();
     void setCompleted() {isCompleted = true;}
     bool isTaskAdded(Task* t); // also checks with composition ...
 
@@ -38,6 +38,7 @@ public:
     void setDisponibility(const QDate& dispo) {disponibility=dispo;}
     void setDeadline(const QDate& date) {deadline=date;}
 
+    bool isTaskValidForProject(Task& t);
     /*!
      * \brief addTask
      * \param t
@@ -50,6 +51,7 @@ public:
      * This method doesn't destroy the task, it simply removes the link between the project and the task.
      */
     void removeTask(const QString& id);
+    void softRemoveTask(const QString& id);
 };
 
 typedef std::vector<Project*> ProjectsContainer;

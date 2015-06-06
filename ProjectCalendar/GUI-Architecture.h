@@ -23,6 +23,8 @@
 #include <QListWidget>
 #include <QListView>
 #include <QDialogButtonBox>
+#include <QPoint>
+#include <QMenu>
 
 #include "TaskManager.h"
 #include "Project.h"
@@ -84,10 +86,7 @@ public:
         connect(this, SIGNAL(clicked()),this,SLOT(popProjectForm()));
     }
 public slots:
-    void popProjectForm(){
-        NewProjectForm* form = new NewProjectForm(this->parentWidget());
-        form->show();
-    }
+    void popProjectForm();
 };
 
 class NewTaskForm : public QDialog {
@@ -103,6 +102,8 @@ class NewTaskForm : public QDialog {
     QComboBox* taskType;
     QListView* tasks;
     NewTaskB* addTasks;
+    QListView* precedes;
+    QListView* follows;
 
     QLabel* identifierL;
     QLabel* titleL;
@@ -111,6 +112,8 @@ class NewTaskForm : public QDialog {
     QLabel* deadlineL;
     QLabel* tasksL;
     QLabel* taskTypeL;
+    QLabel* precedesL;
+    QLabel* followsL;
 
     QFormLayout* formLayout;
 
@@ -121,9 +124,50 @@ public slots:
     void showTasksToChoose(const QString& index);
 };
 
+/*!
+ * \brief The AddTaskForm class
+ * Form used to add Tasks to Projects and Composite Tasks.
+ */
+class AddTaskForm : public QDialog {
+protected:
+    Q_OBJECT
+    QDialogButtonBox* buttonBox;
+    NewTaskB* addTasks;
+    QLabel* tasksL;
+    QFormLayout* formLayout;
+public:
+    QListView* tasks;
+    AddTaskForm(QWidget* parent=0);
+    virtual ~AddTaskForm(){}
+public slots:
+    virtual void addTask()=0;
+};
+
+class AddTaskToProjectForm : public AddTaskForm {
+    Q_OBJECT
+    Project* project;
+public:
+    AddTaskToProjectForm(Project* proj,QWidget* parent=0) : project(proj),AddTaskForm(parent) {
+        setWindowTitle("Add Task to Project");
+    }
+public slots:
+    void addTask() override;
+};
+
+class AddTaskToCompositeTaskForm : public AddTaskForm {
+    Q_OBJECT
+    CompositeTask* compoTask;
+public:
+    AddTaskToCompositeTaskForm(CompositeTask* task,QWidget* parent) : compoTask(task),AddTaskForm(parent){
+        this->setWindowTitle("Add Task to Composite Task");
+    }
+public slots:
+    void addTask() override;
+};
 
 class MainWindow : public QWidget {
     Q_OBJECT
+
     QVBoxLayout* mainLayer;
     QHBoxLayout* topLayer;
     QHBoxLayout* workSpaceLayer;
@@ -150,7 +194,7 @@ class MainWindow : public QWidget {
     QTreeView* eventsTree;
     QTreeView* independentTasksTree;
 
-
+    void setTasksInModel();
     void setProjectsInMenu();
     //void setEventsInMenu();
     void setIndependentTasksInMenu();
@@ -166,17 +210,60 @@ class MainWindow : public QWidget {
 public:
     MainWindow(QWidget* parent = 0);
 
+    static QStandardItemModel* tasksModel;
     static QStandardItemModel* projectsModel;
     static QStandardItemModel* eventsModel;
     static QStandardItemModel* independentTasksModel;
 
 public slots:
+    void refreshTasksModel();
     void refreshProjectsModel();
     void refreshIndependentTasksModel();
     //void refreshEventsModel();
     void showProjectsInMenu();
     void showIndependentTasksInMenu();
     //void showEventsInMenu();
+    void showProjectContextMenu(const QPoint& pos);
+    void showTaskContextMenu(const QPoint& pos);
+};
+
+
+class TaskInfo : public QDialog {
+    Q_OBJECT
+
+    QLabel* identifier;
+    QLabel* title;
+    QLabel* duration;
+    QLabel* disponibility;
+    QLabel* deadline;
+    QLabel* tasks;
+    QLabel* taskType;
+    QLabel* subType;
+    QLabel* precedes;
+    QLabel* follows;
+
+    QFormLayout* formLayout;
+
+public:
+    TaskInfo(Task* t,QWidget* parent);
+
+};
+
+class ProjectInfo : public QDialog {
+    Q_OBJECT
+
+    QLabel* identifier;
+    QLabel* title;
+    QLabel* duration;
+    QLabel* disponibility;
+    QLabel* deadline;
+    QLabel* tasks;
+
+    QFormLayout* formLayout;
+
+public:
+    ProjectInfo(Project* t,QWidget* parent);
+
 };
 
 

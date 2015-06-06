@@ -75,7 +75,7 @@ protected:
     void checkProjectValidity(Task* t) {
         for (Iterator<Project> it = ProjectFactory::getInstance().getIterator(); !(it.isDone()); it.next()) {
             if ((it.current()).isItemHere(t)) {
-                it.current().removeTask(t->getId());
+                it.current().softRemoveTask(t->getId());
                 return;
             }
         }

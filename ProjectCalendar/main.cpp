@@ -64,10 +64,10 @@ int main(int argc, char *argv[]) {
             qDebug()<<it.current().getId();
         }
         pro1.addTask(cp->getTask("NF17"));
-        /*pf->removeProject(&pro1);
-        cf->freeInstance();
-        cp->freeInstance();
-        cnp->freeInstance();*/
+        //pf->removeProject(&pro1);
+        //cf->freeInstance();
+       // cp->freeInstance();
+        //cnp->freeInstance();
 
 
     QApplication app(argc, argv);
@@ -75,4 +75,5 @@ int main(int argc, char *argv[]) {
     wid.show();
 
     return app.exec();
+        //return 0;
 }

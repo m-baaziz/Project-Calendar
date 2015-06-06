@@ -12,6 +12,16 @@ bool Project::isTaskAdded(Task *t) {
     return false;
 }
 
+bool Project::isTaskValidForProject(Task &t) {
+    CompositeTask* includer;
+    if (!(ProjectFactory::getInstance().isTaskavalaible(&t))) throw CalendarException("Error : Task "+t.getId()+" has already been added to a project ");
+    if (includer = CompositeFactory::getInstance().isTaskIncluded(t.getId()))
+        throw CalendarException("Error : you can't add to a project a task that is included in a composite Task, pleas add instead the composite Task ("+includer->getId()+")");
+    if (t.getDisponibility()<this->getDisponibility() || t.getDeadline()>this->getDeadline())
+        throw CalendarException("Error : Task "+t.getId()+" can't be added in Project "+this->getId()+" because the task's disponibility/deadline is not compatible with the project disponibility/deadline");
+    return true;
+}
+
 Task& Project::addTask(Task &t) {
     CompositeTask* includer;
     if (!(ProjectFactory::getInstance().isTaskavalaible(&t))) throw CalendarException("Error : Task "+t.getId()+" has already been added to a project ");
@@ -26,10 +36,27 @@ Task& Project::addTask(Task &t) {
 void Project::removeTask(const QString &id) {
     for (TasksContainer::iterator it = tasks.begin(); it != tasks.end(); ++it) {
         if ((*it)->getId() == id) {
+            Task* toDelete = *it;
+            tasks.erase(it);
+            NonPreemptiveFactory::getInstance().removeTask(toDelete);
+            return;
+        }
+    }
+
+}
+
+void Project::softRemoveTask(const QString &id) {
+    for (TasksContainer::iterator it = tasks.begin(); it != tasks.end(); ++it) {
+        if ((*it)->getId() == id) {
             tasks.erase(it);
             return;
         }
     }
+}
+
+Project::~Project() {
+    while(!(tasks.empty())) removeTask(tasks.front()->getId());
+    tasks.clear();
 }
 
 bool ProjectFactory::isTaskavalaible(Task* t) {
@@ -56,7 +83,9 @@ bool ProjectFactory::isProjectHere(const Project* const p) {
 }
 
 Project& ProjectFactory::getProject(const QString &id) {
-    return *(findProject(id));
+    Project* toSend = findProject(id);
+    if (toSend == 0) throw CalendarException("Error : Project "+id+" not found !");
+    return *toSend;
 }
 
 Project& ProjectFactory::addProject(const QString &id, const QString &t, const Duration &dur, const QDate &dispo, const QDate &term) {
@@ -69,9 +98,9 @@ Project& ProjectFactory::addProject(const QString &id, const QString &t, const D
 void ProjectFactory::removeProject(Project* p) {
     for (ProjectsContainer::iterator itp = projects.begin(); itp!= projects.end(); ++itp) {
         if (p && *itp == p) {
-            p->clearArray();
-            delete *itp;
+            Project* toDelete = *itp;
             projects.erase(itp);
+            delete toDelete;
             return;
         }
     }

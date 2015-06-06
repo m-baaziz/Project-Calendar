@@ -464,9 +464,273 @@ int NewTaskForm::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     }
     return _id;
 }
+struct qt_meta_stringdata_AddTaskForm_t {
+    QByteArrayData data[3];
+    char stringdata[22];
+};
+#define QT_MOC_LITERAL(idx, ofs, len) \
+    Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
+    offsetof(qt_meta_stringdata_AddTaskForm_t, stringdata) + ofs \
+        - idx * sizeof(QByteArrayData) \
+    )
+static const qt_meta_stringdata_AddTaskForm_t qt_meta_stringdata_AddTaskForm = {
+    {
+QT_MOC_LITERAL(0, 0, 11),
+QT_MOC_LITERAL(1, 12, 7),
+QT_MOC_LITERAL(2, 20, 0)
+    },
+    "AddTaskForm\0addTask\0\0"
+};
+#undef QT_MOC_LITERAL
+
+static const uint qt_meta_data_AddTaskForm[] = {
+
+ // content:
+       7,       // revision
+       0,       // classname
+       0,    0, // classinfo
+       1,   14, // methods
+       0,    0, // properties
+       0,    0, // enums/sets
+       0,    0, // constructors
+       0,       // flags
+       0,       // signalCount
+
+ // slots: name, argc, parameters, tag, flags
+       1,    0,   19,    2, 0x0a,
+
+ // slots: parameters
+    QMetaType::Void,
+
+       0        // eod
+};
+
+void AddTaskForm::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
+{
+    if (_c == QMetaObject::InvokeMetaMethod) {
+        AddTaskForm *_t = static_cast<AddTaskForm *>(_o);
+        switch (_id) {
+        case 0: _t->addTask(); break;
+        default: ;
+        }
+    }
+    Q_UNUSED(_a);
+}
+
+const QMetaObject AddTaskForm::staticMetaObject = {
+    { &QDialog::staticMetaObject, qt_meta_stringdata_AddTaskForm.data,
+      qt_meta_data_AddTaskForm,  qt_static_metacall, 0, 0}
+};
+
+
+const QMetaObject *AddTaskForm::metaObject() const
+{
+    return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;
+}
+
+void *AddTaskForm::qt_metacast(const char *_clname)
+{
+    if (!_clname) return 0;
+    if (!strcmp(_clname, qt_meta_stringdata_AddTaskForm.stringdata))
+        return static_cast<void*>(const_cast< AddTaskForm*>(this));
+    return QDialog::qt_metacast(_clname);
+}
+
+int AddTaskForm::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+{
+    _id = QDialog::qt_metacall(_c, _id, _a);
+    if (_id < 0)
+        return _id;
+    if (_c == QMetaObject::InvokeMetaMethod) {
+        if (_id < 1)
+            qt_static_metacall(this, _c, _id, _a);
+        _id -= 1;
+    } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
+        if (_id < 1)
+            *reinterpret_cast<int*>(_a[0]) = -1;
+        _id -= 1;
+    }
+    return _id;
+}
+struct qt_meta_stringdata_AddTaskToProjectForm_t {
+    QByteArrayData data[3];
+    char stringdata[31];
+};
+#define QT_MOC_LITERAL(idx, ofs, len) \
+    Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
+    offsetof(qt_meta_stringdata_AddTaskToProjectForm_t, stringdata) + ofs \
+        - idx * sizeof(QByteArrayData) \
+    )
+static const qt_meta_stringdata_AddTaskToProjectForm_t qt_meta_stringdata_AddTaskToProjectForm = {
+    {
+QT_MOC_LITERAL(0, 0, 20),
+QT_MOC_LITERAL(1, 21, 7),
+QT_MOC_LITERAL(2, 29, 0)
+    },
+    "AddTaskToProjectForm\0addTask\0\0"
+};
+#undef QT_MOC_LITERAL
+
+static const uint qt_meta_data_AddTaskToProjectForm[] = {
+
+ // content:
+       7,       // revision
+       0,       // classname
+       0,    0, // classinfo
+       1,   14, // methods
+       0,    0, // properties
+       0,    0, // enums/sets
+       0,    0, // constructors
+       0,       // flags
+       0,       // signalCount
+
+ // slots: name, argc, parameters, tag, flags
+       1,    0,   19,    2, 0x0a,
+
+ // slots: parameters
+    QMetaType::Void,
+
+       0        // eod
+};
+
+void AddTaskToProjectForm::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
+{
+    if (_c == QMetaObject::InvokeMetaMethod) {
+        AddTaskToProjectForm *_t = static_cast<AddTaskToProjectForm *>(_o);
+        switch (_id) {
+        case 0: _t->addTask(); break;
+        default: ;
+        }
+    }
+    Q_UNUSED(_a);
+}
+
+const QMetaObject AddTaskToProjectForm::staticMetaObject = {
+    { &AddTaskForm::staticMetaObject, qt_meta_stringdata_AddTaskToProjectForm.data,
+      qt_meta_data_AddTaskToProjectForm,  qt_static_metacall, 0, 0}
+};
+
+
+const QMetaObject *AddTaskToProjectForm::metaObject() const
+{
+    return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;
+}
+
+void *AddTaskToProjectForm::qt_metacast(const char *_clname)
+{
+    if (!_clname) return 0;
+    if (!strcmp(_clname, qt_meta_stringdata_AddTaskToProjectForm.stringdata))
+        return static_cast<void*>(const_cast< AddTaskToProjectForm*>(this));
+    return AddTaskForm::qt_metacast(_clname);
+}
+
+int AddTaskToProjectForm::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+{
+    _id = AddTaskForm::qt_metacall(_c, _id, _a);
+    if (_id < 0)
+        return _id;
+    if (_c == QMetaObject::InvokeMetaMethod) {
+        if (_id < 1)
+            qt_static_metacall(this, _c, _id, _a);
+        _id -= 1;
+    } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
+        if (_id < 1)
+            *reinterpret_cast<int*>(_a[0]) = -1;
+        _id -= 1;
+    }
+    return _id;
+}
+struct qt_meta_stringdata_AddTaskToCompositeTaskForm_t {
+    QByteArrayData data[3];
+    char stringdata[37];
+};
+#define QT_MOC_LITERAL(idx, ofs, len) \
+    Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
+    offsetof(qt_meta_stringdata_AddTaskToCompositeTaskForm_t, stringdata) + ofs \
+        - idx * sizeof(QByteArrayData) \
+    )
+static const qt_meta_stringdata_AddTaskToCompositeTaskForm_t qt_meta_stringdata_AddTaskToCompositeTaskForm = {
+    {
+QT_MOC_LITERAL(0, 0, 26),
+QT_MOC_LITERAL(1, 27, 7),
+QT_MOC_LITERAL(2, 35, 0)
+    },
+    "AddTaskToCompositeTaskForm\0addTask\0\0"
+};
+#undef QT_MOC_LITERAL
+
+static const uint qt_meta_data_AddTaskToCompositeTaskForm[] = {
+
+ // content:
+       7,       // revision
+       0,       // classname
+       0,    0, // classinfo
+       1,   14, // methods
+       0,    0, // properties
+       0,    0, // enums/sets
+       0,    0, // constructors
+       0,       // flags
+       0,       // signalCount
+
+ // slots: name, argc, parameters, tag, flags
+       1,    0,   19,    2, 0x0a,
+
+ // slots: parameters
+    QMetaType::Void,
+
+       0        // eod
+};
+
+void AddTaskToCompositeTaskForm::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
+{
+    if (_c == QMetaObject::InvokeMetaMethod) {
+        AddTaskToCompositeTaskForm *_t = static_cast<AddTaskToCompositeTaskForm *>(_o);
+        switch (_id) {
+        case 0: _t->addTask(); break;
+        default: ;
+        }
+    }
+    Q_UNUSED(_a);
+}
+
+const QMetaObject AddTaskToCompositeTaskForm::staticMetaObject = {
+    { &AddTaskForm::staticMetaObject, qt_meta_stringdata_AddTaskToCompositeTaskForm.data,
+      qt_meta_data_AddTaskToCompositeTaskForm,  qt_static_metacall, 0, 0}
+};
+
+
+const QMetaObject *AddTaskToCompositeTaskForm::metaObject() const
+{
+    return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;
+}
+
+void *AddTaskToCompositeTaskForm::qt_metacast(const char *_clname)
+{
+    if (!_clname) return 0;
+    if (!strcmp(_clname, qt_meta_stringdata_AddTaskToCompositeTaskForm.stringdata))
+        return static_cast<void*>(const_cast< AddTaskToCompositeTaskForm*>(this));
+    return AddTaskForm::qt_metacast(_clname);
+}
+
+int AddTaskToCompositeTaskForm::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+{
+    _id = AddTaskForm::qt_metacall(_c, _id, _a);
+    if (_id < 0)
+        return _id;
+    if (_c == QMetaObject::InvokeMetaMethod) {
+        if (_id < 1)
+            qt_static_metacall(this, _c, _id, _a);
+        _id -= 1;
+    } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
+        if (_id < 1)
+            *reinterpret_cast<int*>(_a[0]) = -1;
+        _id -= 1;
+    }
+    return _id;
+}
 struct qt_meta_stringdata_MainWindow_t {
-    QByteArrayData data[6];
-    char stringdata[109];
+    QByteArrayData data[10];
+    char stringdata[174];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -476,15 +740,21 @@ struct qt_meta_stringdata_MainWindow_t {
 static const qt_meta_stringdata_MainWindow_t qt_meta_stringdata_MainWindow = {
     {
 QT_MOC_LITERAL(0, 0, 10),
-QT_MOC_LITERAL(1, 11, 20),
-QT_MOC_LITERAL(2, 32, 0),
-QT_MOC_LITERAL(3, 33, 28),
-QT_MOC_LITERAL(4, 62, 18),
-QT_MOC_LITERAL(5, 81, 26)
+QT_MOC_LITERAL(1, 11, 17),
+QT_MOC_LITERAL(2, 29, 0),
+QT_MOC_LITERAL(3, 30, 20),
+QT_MOC_LITERAL(4, 51, 28),
+QT_MOC_LITERAL(5, 80, 18),
+QT_MOC_LITERAL(6, 99, 26),
+QT_MOC_LITERAL(7, 126, 22),
+QT_MOC_LITERAL(8, 149, 3),
+QT_MOC_LITERAL(9, 153, 19)
     },
-    "MainWindow\0refreshProjectsModel\0\0"
-    "refreshIndependentTasksModel\0"
+    "MainWindow\0refreshTasksModel\0\0"
+    "refreshProjectsModel\0refreshIndependentTasksModel\0"
     "showProjectsInMenu\0showIndependentTasksInMenu\0"
+    "showProjectContextMenu\0pos\0"
+    "showTaskContextMenu\0"
 };
 #undef QT_MOC_LITERAL
 
@@ -494,7 +764,7 @@ static const uint qt_meta_data_MainWindow[] = {
        7,       // revision
        0,       // classname
        0,    0, // classinfo
-       4,   14, // methods
+       7,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -502,16 +772,22 @@ static const uint qt_meta_data_MainWindow[] = {
        0,       // signalCount
 
  // slots: name, argc, parameters, tag, flags
-       1,    0,   34,    2, 0x0a,
-       3,    0,   35,    2, 0x0a,
-       4,    0,   36,    2, 0x0a,
-       5,    0,   37,    2, 0x0a,
+       1,    0,   49,    2, 0x0a,
+       3,    0,   50,    2, 0x0a,
+       4,    0,   51,    2, 0x0a,
+       5,    0,   52,    2, 0x0a,
+       6,    0,   53,    2, 0x0a,
+       7,    1,   54,    2, 0x0a,
+       9,    1,   57,    2, 0x0a,
 
  // slots: parameters
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
+    QMetaType::Void,
+    QMetaType::Void, QMetaType::QPoint,    8,
+    QMetaType::Void, QMetaType::QPoint,    8,
 
        0        // eod
 };
@@ -521,14 +797,16 @@ void MainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
     if (_c == QMetaObject::InvokeMetaMethod) {
         MainWindow *_t = static_cast<MainWindow *>(_o);
         switch (_id) {
-        case 0: _t->refreshProjectsModel(); break;
-        case 1: _t->refreshIndependentTasksModel(); break;
-        case 2: _t->showProjectsInMenu(); break;
-        case 3: _t->showIndependentTasksInMenu(); break;
+        case 0: _t->refreshTasksModel(); break;
+        case 1: _t->refreshProjectsModel(); break;
+        case 2: _t->refreshIndependentTasksModel(); break;
+        case 3: _t->showProjectsInMenu(); break;
+        case 4: _t->showIndependentTasksInMenu(); break;
+        case 5: _t->showProjectContextMenu((*reinterpret_cast< const QPoint(*)>(_a[1]))); break;
+        case 6: _t->showTaskContextMenu((*reinterpret_cast< const QPoint(*)>(_a[1]))); break;
         default: ;
         }
     }
-    Q_UNUSED(_a);
 }
 
 const QMetaObject MainWindow::staticMetaObject = {
@@ -556,14 +834,148 @@ int MainWindow::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 4)
+        if (_id < 7)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 4;
+        _id -= 7;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 4)
+        if (_id < 7)
             *reinterpret_cast<int*>(_a[0]) = -1;
-        _id -= 4;
+        _id -= 7;
     }
+    return _id;
+}
+struct qt_meta_stringdata_TaskInfo_t {
+    QByteArrayData data[1];
+    char stringdata[10];
+};
+#define QT_MOC_LITERAL(idx, ofs, len) \
+    Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
+    offsetof(qt_meta_stringdata_TaskInfo_t, stringdata) + ofs \
+        - idx * sizeof(QByteArrayData) \
+    )
+static const qt_meta_stringdata_TaskInfo_t qt_meta_stringdata_TaskInfo = {
+    {
+QT_MOC_LITERAL(0, 0, 8)
+    },
+    "TaskInfo\0"
+};
+#undef QT_MOC_LITERAL
+
+static const uint qt_meta_data_TaskInfo[] = {
+
+ // content:
+       7,       // revision
+       0,       // classname
+       0,    0, // classinfo
+       0,    0, // methods
+       0,    0, // properties
+       0,    0, // enums/sets
+       0,    0, // constructors
+       0,       // flags
+       0,       // signalCount
+
+       0        // eod
+};
+
+void TaskInfo::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
+{
+    Q_UNUSED(_o);
+    Q_UNUSED(_id);
+    Q_UNUSED(_c);
+    Q_UNUSED(_a);
+}
+
+const QMetaObject TaskInfo::staticMetaObject = {
+    { &QDialog::staticMetaObject, qt_meta_stringdata_TaskInfo.data,
+      qt_meta_data_TaskInfo,  qt_static_metacall, 0, 0}
+};
+
+
+const QMetaObject *TaskInfo::metaObject() const
+{
+    return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;
+}
+
+void *TaskInfo::qt_metacast(const char *_clname)
+{
+    if (!_clname) return 0;
+    if (!strcmp(_clname, qt_meta_stringdata_TaskInfo.stringdata))
+        return static_cast<void*>(const_cast< TaskInfo*>(this));
+    return QDialog::qt_metacast(_clname);
+}
+
+int TaskInfo::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+{
+    _id = QDialog::qt_metacall(_c, _id, _a);
+    if (_id < 0)
+        return _id;
+    return _id;
+}
+struct qt_meta_stringdata_ProjectInfo_t {
+    QByteArrayData data[1];
+    char stringdata[13];
+};
+#define QT_MOC_LITERAL(idx, ofs, len) \
+    Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
+    offsetof(qt_meta_stringdata_ProjectInfo_t, stringdata) + ofs \
+        - idx * sizeof(QByteArrayData) \
+    )
+static const qt_meta_stringdata_ProjectInfo_t qt_meta_stringdata_ProjectInfo = {
+    {
+QT_MOC_LITERAL(0, 0, 11)
+    },
+    "ProjectInfo\0"
+};
+#undef QT_MOC_LITERAL
+
+static const uint qt_meta_data_ProjectInfo[] = {
+
+ // content:
+       7,       // revision
+       0,       // classname
+       0,    0, // classinfo
+       0,    0, // methods
+       0,    0, // properties
+       0,    0, // enums/sets
+       0,    0, // constructors
+       0,       // flags
+       0,       // signalCount
+
+       0        // eod
+};
+
+void ProjectInfo::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
+{
+    Q_UNUSED(_o);
+    Q_UNUSED(_id);
+    Q_UNUSED(_c);
+    Q_UNUSED(_a);
+}
+
+const QMetaObject ProjectInfo::staticMetaObject = {
+    { &QDialog::staticMetaObject, qt_meta_stringdata_ProjectInfo.data,
+      qt_meta_data_ProjectInfo,  qt_static_metacall, 0, 0}
+};
+
+
+const QMetaObject *ProjectInfo::metaObject() const
+{
+    return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;
+}
+
+void *ProjectInfo::qt_metacast(const char *_clname)
+{
+    if (!_clname) return 0;
+    if (!strcmp(_clname, qt_meta_stringdata_ProjectInfo.stringdata))
+        return static_cast<void*>(const_cast< ProjectInfo*>(this));
+    return QDialog::qt_metacast(_clname);
+}
+
+int ProjectInfo::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+{
+    _id = QDialog::qt_metacall(_c, _id, _a);
+    if (_id < 0)
+        return _id;
     return _id;
 }
 QT_END_MOC_NAMESPACE

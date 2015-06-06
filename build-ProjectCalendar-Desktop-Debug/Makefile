@@ -514,6 +514,11 @@ moc_GUI-Architecture.cpp: /usr/include/qt5/QtWidgets/QApplication \
 		/usr/include/qt5/QtWidgets/QListView \
 		/usr/include/qt5/QtWidgets/QDialogButtonBox \
 		/usr/include/qt5/QtWidgets/qdialogbuttonbox.h \
+		/usr/include/qt5/QtCore/QPoint \
+		/usr/include/qt5/QtWidgets/QMenu \
+		/usr/include/qt5/QtWidgets/qmenu.h \
+		/usr/include/qt5/QtWidgets/qaction.h \
+		/usr/include/qt5/QtWidgets/qactiongroup.h \
 		../ProjectCalendar/TaskManager.h \
 		../ProjectCalendar/Task.h \
 		../ProjectCalendar/Calendar.h \
@@ -1328,7 +1333,12 @@ main.o: ../ProjectCalendar/main.cpp ../ProjectCalendar/Calendar.h \
 		/usr/include/qt5/QtWidgets/qlistview.h \
 		/usr/include/qt5/QtWidgets/QListView \
 		/usr/include/qt5/QtWidgets/QDialogButtonBox \
-		/usr/include/qt5/QtWidgets/qdialogbuttonbox.h
+		/usr/include/qt5/QtWidgets/qdialogbuttonbox.h \
+		/usr/include/qt5/QtCore/QPoint \
+		/usr/include/qt5/QtWidgets/QMenu \
+		/usr/include/qt5/QtWidgets/qmenu.h \
+		/usr/include/qt5/QtWidgets/qaction.h \
+		/usr/include/qt5/QtWidgets/qactiongroup.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o ../ProjectCalendar/main.cpp
 
 Association.o: ../ProjectCalendar/Association.cpp ../ProjectCalendar/Association.h \
@@ -1696,6 +1706,11 @@ GUI-Architecture.o: ../ProjectCalendar/GUI-Architecture.cpp ../ProjectCalendar/G
 		/usr/include/qt5/QtWidgets/QListView \
 		/usr/include/qt5/QtWidgets/QDialogButtonBox \
 		/usr/include/qt5/QtWidgets/qdialogbuttonbox.h \
+		/usr/include/qt5/QtCore/QPoint \
+		/usr/include/qt5/QtWidgets/QMenu \
+		/usr/include/qt5/QtWidgets/qmenu.h \
+		/usr/include/qt5/QtWidgets/qaction.h \
+		/usr/include/qt5/QtWidgets/qactiongroup.h \
 		../ProjectCalendar/TaskManager.h \
 		../ProjectCalendar/Task.h \
 		../ProjectCalendar/Calendar.h \
