@@ -25,11 +25,47 @@
 #include <QDialogButtonBox>
 #include <QPoint>
 #include <QMenu>
+#include <QGraphicsTextItem>
+#include <QGraphicsRectItem>
+#include <QPainter>
+#include <QRegion>
+#include <QRect>
+#include <QPen>
+#include <QPolygon>
+#include <math.h>
+#include <QTableView>
 
 #include "TaskManager.h"
 #include "Project.h"
 #include "Association.h"
 
+
+class ArrowHead : public QPolygon {
+
+public:
+    ArrowHead(int x, int y, int FX, int FY) {
+        int dx = x - FX;
+        int dy = y - FY;
+
+        // normalize
+        double length = sqrt(dx * dx + dy * dy);
+        double unitDx = dx / length;
+        double unitDy = dy / length;
+        // increase this to get a larger arrow head
+        const int arrowHeadBoxSize = 5;
+
+        QPoint arrowPoint1 =  QPoint(
+        (int)(x+20 - unitDx * arrowHeadBoxSize - unitDy * arrowHeadBoxSize),
+        (int)(y+20 - unitDy * arrowHeadBoxSize + unitDx * arrowHeadBoxSize));
+        QPoint arrowPoint2 =  QPoint(
+        (int)(x+20 - unitDx * arrowHeadBoxSize + unitDy * arrowHeadBoxSize),
+        (int)(y+20 - unitDy * arrowHeadBoxSize - unitDx * arrowHeadBoxSize));
+
+        *this << QPoint(x+20,y+20) <<arrowPoint1<<arrowPoint2;
+
+    }
+
+};
 
 class MyComboBox: public QComboBox {
   Q_OBJECT
@@ -92,7 +128,6 @@ public slots:
 class NewTaskForm : public QDialog {
     Q_OBJECT
     QDialogButtonBox* buttonBox;
-    QStandardItemModel* tempi;
 
     QLineEdit* identifier;
     QLineEdit* title;
@@ -165,6 +200,14 @@ public slots:
     void addTask() override;
 };
 
+class CalendarTable : public QTableView {
+    Q_OBJECT
+public:
+    CalendarTable(QWidget* parent);
+public slots:
+
+};
+
 class MainWindow : public QWidget {
     Q_OBJECT
 
@@ -183,8 +226,6 @@ class MainWindow : public QWidget {
      */
     NewProjectB* newProjectB;
     QPushButton* newTaskB;
-    QPushButton* newEventB;
-    QPushButton* taskTreeB;   // show task tree
     QPushButton* calendarB;   // show Calendar
 
     // in itemsMenuLayer
@@ -198,15 +239,26 @@ class MainWindow : public QWidget {
     void setProjectsInMenu();
     //void setEventsInMenu();
     void setIndependentTasksInMenu();
+    void setProjectsTreeModel();
 
     // in displayLayer
 
-    QTableWidget* calendarTable;
+    QTableView* calendarTable;
     QGraphicsView* treeView;
     QGraphicsScene* treeScene;
 
     void injectSubTaskInModel(QStandardItem* parent, Task& son);
+    void injectSuccessorInModel(QStandardItem* parent, Task& son, Project& proj);
+    void drawProjectTree(QModelIndex projectIndex);
 
+    struct ProjectTreeNode {
+        QModelIndex id;
+        unsigned int x;
+        unsigned int y;
+        ProjectTreeNode(const QModelIndex& i, const unsigned int& X, const unsigned int& Y) : id(i),x(X),y(Y){}
+    };
+    void treeDepth(QModelIndex currentIndex, unsigned int *depth, unsigned int tempDepth);
+    void drawTreeHelper(const unsigned int Y,const unsigned int X, std::vector<ProjectTreeNode>& V, QModelIndex father,unsigned int space);
 public:
     MainWindow(QWidget* parent = 0);
 
@@ -214,17 +266,21 @@ public:
     static QStandardItemModel* projectsModel;
     static QStandardItemModel* eventsModel;
     static QStandardItemModel* independentTasksModel;
+    static QStandardItemModel* projectsTreeModel;
 
 public slots:
     void refreshTasksModel();
     void refreshProjectsModel();
     void refreshIndependentTasksModel();
+    void refreshProjectsTreeModel();
     //void refreshEventsModel();
     void showProjectsInMenu();
     void showIndependentTasksInMenu();
     //void showEventsInMenu();
     void showProjectContextMenu(const QPoint& pos);
     void showTaskContextMenu(const QPoint& pos);
+
+    void showCalendar();
 };
 
 
@@ -265,6 +321,35 @@ public:
     ProjectInfo(Project* t,QWidget* parent);
 
 };
+
+class EditAssociationConstraint : public QDialog {
+    Q_OBJECT
+
+    QTreeView* predecessors;
+    QTreeView* successors;
+    Task* task;
+
+    QPushButton* addB;
+    QPushButton* removeB;
+    QFormLayout* formLayout;
+
+public :
+    EditAssociationConstraint(Task* t, QWidget* parent);
+public slots:
+    void addAssociation();
+    void removeAssociation();
+};
+
+/*class TempTree : public QTreeView {
+    Q_OBJECT
+public :
+    TempTree(QWidget* parent) : QTreeView(parent) {
+        this->setModel(MainWindow::independentTasksModel);
+        QPainter* paint = new QPainter();
+        QRegion* region = new QRegion(50,50,100,100);
+        this->drawTree(paint,);
+    }
+};*/
 
 
 #endif // GUIARCHITECTURE_H

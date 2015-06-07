@@ -1,5 +1,6 @@
 #include "Project.h"
 #include "TaskManager.h"
+#include "Association.h"
 
 template<>
 Handler<ProjectFactory> Singleton<ProjectFactory>::handler = Handler<ProjectFactory>();
@@ -7,7 +8,7 @@ Handler<ProjectFactory> Singleton<ProjectFactory>::handler = Handler<ProjectFact
 
 bool Project::isTaskAdded(Task *t) {
     for (typename TasksContainer::iterator it = tasks.begin(); it != tasks.end(); ++it) {
-        if (*it == t) return true;
+        if (*it == t || ((*it)->getTaskType()==COMPOSITE && dynamic_cast<CompositeTask*>(*it)->isSubTaskHere(t->getId()))) return true;
     }
     return false;
 }
@@ -29,6 +30,12 @@ Task& Project::addTask(Task &t) {
         throw CalendarException("Error : you can't add to a project a task that is included in a composite Task, pleas add instead the composite Task ("+includer->getId()+")");
     if (t.getDisponibility()<this->getDisponibility() || t.getDeadline()>this->getDeadline())
         throw CalendarException("Error : Task "+t.getId()+" can't be added in Project "+this->getId()+" because the task's disponibility/deadline is not compatible with the project disponibility/deadline");
+    TasksContainer predecessors = AssociationManager::getInstance().getTaskPredecessors(&t);
+    for (TasksContainer::iterator it = predecessors.begin(); it!=predecessors.end(); ++it) {
+        if (!(isTaskAdded(*it)) && !(t.getTaskType()==COMPOSITE && dynamic_cast<CompositeTask&>(t).isSubTaskHere((*it)->getId()))) throw CalendarException("Error : task "+t.getId()+" has to follow "+(*it)->getId()+" , pleas add "+(*it)->getId()+" to the Project");
+    }
+    durationBuffer = durationBuffer+t.getDuration();
+    if (durationBuffer>getDuration()) setDuration(durationBuffer);
     tasks.push_back(&t);
     return t;
 }
@@ -58,6 +65,20 @@ Project::~Project() {
     while(!(tasks.empty())) removeTask(tasks.front()->getId());
     tasks.clear();
 }
+
+
+TasksContainer Project::getRootTasks() {
+    TasksContainer temp;
+    AssociationManager::AssociationRootTasksIterationStrategy strat;
+    AssociationManager::NotAssociationRootTasksIterationStrategy strat1;
+    for (Iterator<Task> it = getIterator(&strat); !(it.isDone()); it.next())
+        temp.push_back(&(it.current()));
+    for (Iterator<CompositeTask> it = getIterator<CompositeTask>(&strat1); !(it.isDone()); it.next())
+        it.current().getAssociationRootTasks(&temp);
+    return temp;
+}
+
+////////////////////////////////////////////////////////////////////
 
 bool ProjectFactory::isTaskavalaible(Task* t) {
     for (ProjectsContainer::iterator it = projects.begin(); it!=projects.end(); ++it) {
@@ -111,4 +132,9 @@ ProjectFactory::~ProjectFactory() {
     projects.clear();
 }
 
-
+Project* ProjectFactory::getTaskProject(Task *t) {
+    for (ProjectsContainer::iterator it = projects.begin(); it!=projects.end(); ++it) {
+        if ((*it)->isTaskAdded(t)) return *it;
+    }
+    return 0;
+}

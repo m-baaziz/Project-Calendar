@@ -126,6 +126,8 @@ class CompositeTask: public Task, public Aggregator<Task> {
 
 protected:
     TasksContainer  subTasks;
+    Duration durationBuffer; // when a task is added to the project, it increses this duration buffer with the task's duration, when this duration buffer becomes bigger than duration, duration is set with durationBuffer's value.
+
     enum TaskType getTaskType() const {return COMPOSITE;}
 
     /*!
@@ -184,6 +186,7 @@ public:
        otherwise it returns 0.
      */
     CompositeTask* isSubTaskHere(const QString& id);
+    TasksContainer* getAssociationRootTasks(TasksContainer* buffer);
 };
 
 

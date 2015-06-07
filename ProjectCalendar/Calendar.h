@@ -84,6 +84,16 @@ public:
      * Display the duration using "hh H mm" format
      */
     void display(QTextStream& flow) const;
+
+    Duration operator+(const Duration& d) {
+        return Duration(getHours()+d.getHours()+(getMinutes()+d.getMinutes())/60,(getMinutes()+d.getMinutes())%60);
+    }
+    bool operator>(const Duration& d) {
+        return minutes>d.getDurationInMinutes();
+    }
+    bool operator<(const Duration& d) {
+        return minutes<d.getDurationInMinutes();
+    }
 };
 
 QTextStream& operator<<(QTextStream& flow, const Duration& d);

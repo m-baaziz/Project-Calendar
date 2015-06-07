@@ -49,6 +49,17 @@ public:
     void removeAssociation(Task* p, Task* s);
     TasksContainer getTaskPredecessors(Task* t);
     TasksContainer getTaskSuccessors(Task* t);
+
+    class AssociationRootTasksIterationStrategy : public TasksIterationStrategy {
+        bool test(Task *tested) const override {
+            return getInstance().getTaskPredecessors(tested).empty();
+        }
+    };
+    class NotAssociationRootTasksIterationStrategy : public TasksIterationStrategy {
+        bool test(Task *tested) const override {
+            return !(getInstance().getTaskPredecessors(tested).empty());
+        }
+    };
 };
 
 #endif // ASSOCIATION_H

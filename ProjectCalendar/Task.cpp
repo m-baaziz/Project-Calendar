@@ -1,5 +1,6 @@
 #include "Task.h"
 #include "TaskManager.h"
+#include "Association.h"
 
 
 // PREEMPTIVE TASK
@@ -67,6 +68,9 @@ void CompositeTask::addSubTask(Task &t) {
         throw CalendarException("Error : The task "+t.getId()+" already includes the task "+this->getId());
     if (t.getDisponibility()<this->getDisponibility() || t.getDeadline()>this->getDeadline())
         throw CalendarException("Error : Task "+t.getId()+" can't be included in composite Task "+this->getId()+" because the subtask disponibility/deadline is not compatible with the parent task disponibility/deadline");
+    AssociationManager::getInstance().addAssociation(&t,this); // implicit precedence link to ensure correct programmations
+    durationBuffer = durationBuffer+t.getDuration();
+    if (durationBuffer>getDuration()) setDuration(durationBuffer);
     subTasks.push_back(&t);  // check if there is an unitary task at the end, and if this "this" is not included in the task's arborescence
 }
 
@@ -86,6 +90,16 @@ void CompositeTask::removeSubTask(const QString &id) {
         }
     }
     throw CalendarException("Error : sub-task "+id+" not found in "+getId());
+}
+
+TasksContainer* CompositeTask::getAssociationRootTasks(TasksContainer* buffer) {
+    AssociationManager::AssociationRootTasksIterationStrategy strat;
+    AssociationManager::NotAssociationRootTasksIterationStrategy strat1;
+    for (Iterator<Task> it = getIterator(&strat); !(it.isDone()); it.next())
+        buffer->push_back(&(it.current()));
+    for (Iterator<CompositeTask> it = getIterator<CompositeTask>(&strat1); !(it.isDone()); it.next())
+        buffer->insert(buffer->end(),it.current().getAssociationRootTasks(buffer)->begin(),it.current().getAssociationRootTasks(buffer)->end());
+    return buffer;
 }
 
 // COMPOSITE FACTORY

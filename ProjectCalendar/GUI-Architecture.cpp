@@ -4,7 +4,7 @@ QStandardItemModel* MainWindow::tasksModel = new QStandardItemModel();
 QStandardItemModel* MainWindow::projectsModel = new QStandardItemModel();
 QStandardItemModel* MainWindow::eventsModel = new QStandardItemModel();
 QStandardItemModel* MainWindow::independentTasksModel = new QStandardItemModel();
-
+QStandardItemModel* MainWindow::projectsTreeModel = new QStandardItemModel();
 
 MainWindow::MainWindow(QWidget *parent): QWidget(parent) {
     this->resize(1300,800);
@@ -20,14 +20,12 @@ MainWindow::MainWindow(QWidget *parent): QWidget(parent) {
 
     newProjectB = new NewProjectB("New Project",this);
     newTaskB = new NewTaskB("New Task",this);
-    newEventB = new QPushButton("New Event",this);
-    taskTreeB = new QPushButton("Task Tree",this);
     calendarB = new QPushButton("Calendar",this);
+
+    calendarB->connect(calendarB,SIGNAL(clicked()),this,SLOT(showCalendar()));
 
     topLayer->addWidget(newProjectB);
     topLayer->addWidget(newTaskB);
-    topLayer->addWidget(newEventB);
-    topLayer->addWidget(taskTreeB);
     topLayer->addWidget(calendarB);
 
     // in itemsMenuLayer
@@ -36,12 +34,11 @@ MainWindow::MainWindow(QWidget *parent): QWidget(parent) {
     projectsTree = new QTreeView(this);
     eventsTree = new QTreeView(this);
     independentTasksTree = new QTreeView(this);
-    projectsTree->setModel(MainWindow::projectsModel);
+    projectsTree->setModel(projectsTreeModel);
     independentTasksTree->setModel(independentTasksModel);
     //eventsTree->setModel(eventsModel);
     independentTasksTree->hide();
     eventsTree->hide();
-    projectsTree->hide();
 
     projectsTree->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(projectsTree, SIGNAL(customContextMenuRequested(const QPoint&)),
@@ -64,13 +61,19 @@ MainWindow::MainWindow(QWidget *parent): QWidget(parent) {
     //setEventsInMenu();
     setIndependentTasksInMenu();
     setTasksInModel();
+    //setProjectsTreeModel();
 
     // in displayLayer
 
-    calendarTable = new QTableWidget;
-    treeView = new QGraphicsView;
+    calendarTable = new CalendarTable(this);
     treeScene = new QGraphicsScene;
+    treeView = new QGraphicsView(treeScene);
 
+    //QRect viewRect(-100, -100, 200, 200);
+    //treeView->setSceneRect(viewRect);
+    treeScene->setSceneRect(250,120,500,500);
+    treeView->setScene(treeScene);
+    treeView->hide();
 
     displayLayer->addWidget(calendarTable);
     displayLayer->addWidget(treeView);
@@ -85,6 +88,82 @@ MainWindow::MainWindow(QWidget *parent): QWidget(parent) {
     workSpaceLayer->addLayout(displayLayer,4);
 
     setLayout(mainLayer);
+}
+
+void MainWindow::showCalendar() {
+    treeView->hide();
+    calendarTable->show();
+}
+
+void MainWindow::treeDepth(QModelIndex currentIndex,unsigned int* depth,unsigned int tempDepth) {
+    tempDepth++;
+    int count = 0;
+    for (unsigned int i = 0; i < projectsTreeModel->rowCount(currentIndex); i++) {
+        count ++;
+        treeDepth(currentIndex.child(i,0),depth,tempDepth);
+    }
+    if (count==0 && tempDepth>*depth) *depth=tempDepth;
+
+}
+
+void MainWindow::drawTreeHelper(const unsigned int Y,const unsigned int X, std::vector<ProjectTreeNode>& V, QModelIndex father,unsigned int space) {
+    int y = Y+100;
+    int diametre = 40;
+    int nodeStartOffset=0;
+    unsigned int sonNB = projectsTreeModel->rowCount(father);
+    if (sonNB>0){
+        space=space/2;
+        if (space<diametre && sonNB>1) diametre = space;
+        nodeStartOffset = (sonNB/2)*space;
+    }
+    int FX=X;
+    int FY=Y;
+    for (std::vector<ProjectTreeNode>::iterator it=V.begin(); it!=V.end(); ++it){
+        if ((*it).id.data().toString()==father.data().toString()) {
+            FX = (*it).x;      // we save father's coordinates in order to make connection edges with its sons.
+            FY = (*it).y;
+        }
+    }
+    for (unsigned int i = 0; i<sonNB; i++) {
+        int x = X-nodeStartOffset+i*space;
+        QString id = father.child(i,0).data().toString();
+        bool present = false;
+        for (std::vector<ProjectTreeNode>::iterator it=V.begin(); it!=V.end(); ++it){
+            if ((*it).id.data().toString()==id) {
+                present = true;
+                treeScene->addLine(FX+20,FY+20,(*it).x+20,(*it).y+20,QPen(QColor("black"),2));
+                treeScene->addPolygon(ArrowHead((*it).x,(*it).y,FX,FY),QPen(QColor("black")),QBrush(Qt::GlobalColor::black));
+            }
+        }
+        if (present) {   // we don't draw the node if it has already been drawn
+            continue;
+        }
+        treeScene->addPolygon(ArrowHead(x,y,FX,FY),QPen(QColor("black")),QBrush(Qt::GlobalColor::black));
+        treeScene->addLine(FX+20,FY+20,x+20,y+20,QPen(QColor("black"),2));
+        treeScene->addEllipse(x,y,diametre,diametre,QPen(QBrush(QColor("black")),3));
+        treeScene->addSimpleText(id)->setPos(x-20,y-15);
+        V.push_back(ProjectTreeNode(father.child(i,0),x,y)); // 10 : temporary value
+    }
+    for (unsigned int i = 0; i<sonNB; i++) {
+        int x = X-space+i*space;
+        drawTreeHelper(y,x,V,father.child(i,0),space);
+    }
+
+}
+
+void MainWindow::drawProjectTree(QModelIndex projectIndex) {
+    std::vector<ProjectTreeNode> V;
+    treeScene->addSimpleText(projectIndex.data().toString())->setPos(500,40);
+    drawTreeHelper(40,500,V,projectIndex,1000/projectsTreeModel->rowCount(projectIndex));
+    unsigned int maxY = 0;  // the maximum y coordinate, helps us to place the last "end" node.
+    for (std::vector<ProjectTreeNode>::iterator it = V.begin(); it!=V.end(); ++it) if ((*it).y>maxY) maxY=(*it).y;
+    treeScene->addSimpleText("END")->setPos(500,maxY+100);
+    for (std::vector<ProjectTreeNode>::iterator it = V.begin(); it!=V.end(); ++it) {
+        if (projectsTreeModel->rowCount((*it).id)==0) {
+            treeScene->addLine((*it).x+20,(*it).y+20,500+20,maxY+100,QPen(QColor("purple"),2));
+            treeScene->addPolygon(ArrowHead(500,maxY+80,(*it).x,(*it).y),QPen(QColor("black")),QBrush(Qt::GlobalColor::black));
+        }
+    }
 }
 
 void MainWindow::setTasksInModel() {
@@ -140,6 +219,43 @@ void MainWindow::setIndependentTasksInMenu() {
     }
 }
 
+void MainWindow::setProjectsTreeModel() {
+    QStandardItem* parent = projectsTreeModel->invisibleRootItem();
+    for (Iterator<Project> itp = ProjectFactory::getInstance().getIterator(); !(itp.isDone()); itp.next()) {
+        QStandardItem* tempP = new QStandardItem(itp.current().getId());  // gonna need to manage those items, and delete them at the end of the process
+        tempP->setFlags(tempP->flags() & ~Qt::ItemIsEditable);
+        parent->appendRow(tempP);
+        TasksContainer rootTasks = itp.current().getRootTasks();
+        for (TasksContainer::iterator it = rootTasks.begin(); it!=rootTasks.end() ; ++it){
+            QStandardItem* temp = new QStandardItem((*it)->getId());
+            temp->setFlags(temp->flags() & ~Qt::ItemIsEditable);
+            tempP->appendRow(temp);
+            //parent = temp;   // this is what to do for trees -> compositions
+            TasksContainer successors = AssociationManager::getInstance().getTaskSuccessors(*it);
+            for (TasksContainer::iterator it2 = successors.begin(); it2!=successors.end(); ++it2) {
+                 injectSuccessorInModel(temp,*(*it2), itp.current());
+            }
+        }
+        /*for (Iterator<CompositeTask> it = itp.current().getIterator<CompositeTask>(); !(it.isDone()); it.next()) {
+            TasksContainer predecessors = AssociationManager::getInstance().getTaskPredecessors(&(it.current()));
+            for (TasksContainer::iterator it2 = predecessors.begin(); it2!=predecessors.end(); ++it2) {
+                 injectSuccessorInModel(tempP,*(*it2), itp.current());
+            }
+        }*/
+    }
+}
+
+
+void MainWindow::injectSuccessorInModel(QStandardItem* parent, Task& son, Project& proj) {
+    QStandardItem* temp = new QStandardItem(son.getId());
+    temp->setFlags(temp->flags() & ~Qt::ItemIsEditable);
+    parent->appendRow(temp);
+    TasksContainer successors = AssociationManager::getInstance().getTaskSuccessors(&son);
+    for (TasksContainer::iterator it = successors.begin(); it!=successors.end(); ++it) {
+        injectSuccessorInModel(temp,*(*it),proj);
+    }
+}
+
 void MainWindow::injectSubTaskInModel(QStandardItem* parent, Task& son) {
     QStandardItem* temp = new QStandardItem(son.getId());
     temp->setFlags(temp->flags() & ~Qt::ItemIsEditable);
@@ -181,9 +297,9 @@ void MainWindow::showProjectContextMenu(const QPoint &pos) {
     try {
         proj = &(ProjectFactory::getInstance().getProject(selectedProject));
         menu->addAction("add tasks");
-        //menu->addAction("edit");
-        menu->addAction("remove");
         menu->addAction("infos");
+        menu->addAction("show tree");
+        menu->addAction("remove");
 
         QAction* selectedItem = menu->exec(globalPos);
         if (selectedItem && selectedItem->text()=="add tasks") {
@@ -199,6 +315,12 @@ void MainWindow::showProjectContextMenu(const QPoint &pos) {
             ProjectInfo* projectinfo = new ProjectInfo(proj,this);
             projectinfo->show();
         }
+        if (selectedItem && selectedItem->text()=="show tree") {
+            treeScene->clear();
+            drawProjectTree(projectsTree->indexAt(pos));
+            calendarTable->hide();
+            treeView->show();
+        }
     }
     catch (CalendarException e) {
 
@@ -211,9 +333,9 @@ void MainWindow::showProjectContextMenu(const QPoint &pos) {
             UnitaryTask* ut = &(NonPreemptiveFactory::getInstance().getTypedTask(selectedTask));
             menu->addAction("schedule programmation");
         }
-        //menu->addAction("edit");
-        menu->addAction("remove");
+        menu->addAction("edit constraints");
         menu->addAction("infos");
+        menu->addAction("remove");
 
         QAction* selectedItem = menu->exec(globalPos);
         if (selectedItem && selectedItem->text()=="add subtasks") {
@@ -228,6 +350,10 @@ void MainWindow::showProjectContextMenu(const QPoint &pos) {
         if (selectedItem && selectedItem->text()=="infos") {
             TaskInfo* taskinfo = new TaskInfo(t,this);
             taskinfo->show();
+        }
+        if (selectedItem && selectedItem->text()=="edit constraints") {
+            EditAssociationConstraint* editc = new EditAssociationConstraint(t,this);
+            editc->show();
         }
     }
     catch (CalendarException e) {return;}
@@ -244,12 +370,11 @@ void MainWindow::showTaskContextMenu(const QPoint &pos) {
         t = &(NonPreemptiveFactory::getInstance().getTask(selectedTask));
         if (t->getTaskType()==COMPOSITE) menu->addAction("add subtasks");
         else {
-            UnitaryTask* ut = &(NonPreemptiveFactory::getInstance().getTypedTask(selectedTask));
             menu->addAction("schedule programmation");
         }
-        //menu->addAction("edit");
-        menu->addAction("remove");
+        menu->addAction("edit constraints");
         menu->addAction("infos");
+        menu->addAction("remove");
     }
     catch (CalendarException e) {return;}
     QAction* selectedItem = menu->exec(globalPos);
@@ -266,6 +391,10 @@ void MainWindow::showTaskContextMenu(const QPoint &pos) {
     if (selectedItem && selectedItem->text()=="infos") {
         TaskInfo* taskinfo = new TaskInfo(t,this);
         taskinfo->show();
+    }
+    if (selectedItem && selectedItem->text()=="edit constraints") {
+        EditAssociationConstraint* editc = new EditAssociationConstraint(t,this);
+        editc->show();
     }
 }
 
@@ -295,6 +424,12 @@ void MainWindow::refreshIndependentTasksModel() {
 void MainWindow::refreshTasksModel() {
     tasksModel->clear();
     setTasksInModel();
+    refreshProjectsTreeModel();
+}
+
+void MainWindow::refreshProjectsTreeModel() {
+    projectsTreeModel->clear();
+    setProjectsTreeModel();
 }
 
 NewProjectForm::NewProjectForm(QWidget *parent) : QDialog(parent) {
@@ -584,7 +719,11 @@ TaskInfo::TaskInfo(Task *t, QWidget *parent) : QDialog(parent) {
     QString temp = "";
     identifier = new QLabel(t->getId(),this);
     title = new QLabel(t->getTitle(),this);
-    duration = new QLabel(QString::number(t->getDuration().getHours())+"H"+QString::number(t->getDuration().getMinutes()),this);
+    unsigned int H = t->getDuration().getHours();
+    unsigned int M = t->getDuration().getMinutes();
+    QString h = (H<10)?"0"+QString::number(H):""+QString::number(H);
+    QString m = (M<10)?"0"+QString::number(M):""+QString::number(M);
+    duration = new QLabel(h+" H "+m,this);
     disponibility = new QLabel(t->getDisponibility().toString(),this);
     deadline = new QLabel(t->getDeadline().toString(),this);
     if (t->getTaskType()==COMPOSITE) {
@@ -604,12 +743,16 @@ TaskInfo::TaskInfo(Task *t, QWidget *parent) : QDialog(parent) {
     TasksContainer predecessors = AssociationManager::getInstance().getTaskPredecessors(t);
     TasksContainer successors = AssociationManager::getInstance().getTaskSuccessors(t);
     temp = "";
-    for (TasksContainer::iterator it = predecessors.begin(); it != predecessors.end(); ++it)
-        temp += " "+(*it)->getId();
+    for (TasksContainer::iterator it = predecessors.begin(); it != predecessors.end(); ++it) {
+        if (!(t->getTaskType()==COMPOSITE && dynamic_cast<CompositeTask*>(t)->isSubTaskHere((*it)->getId())))  // We don't want to display implicit precedence of composite tasks (follows its subtasks)
+            temp += " "+(*it)->getId();
+    }
     follows = new QLabel(temp,this);
     temp = "";
-    for (TasksContainer::iterator it = successors.begin(); it != successors.end(); ++it)
-        temp += " "+(*it)->getId();
+    for (TasksContainer::iterator it = successors.begin(); it != successors.end(); ++it) {
+        if (!((*it)->getTaskType()==COMPOSITE && dynamic_cast<CompositeTask*>(*it)->isSubTaskHere(t->getId())))
+            temp += " "+(*it)->getId();
+    }
     precedes = new QLabel(temp,this);
 
     formLayout = new QFormLayout(this);
@@ -634,7 +777,11 @@ ProjectInfo::ProjectInfo(Project *t, QWidget *parent) : QDialog(parent) {
     QString temp = "";
     identifier = new QLabel(t->getId(),this);
     title = new QLabel(t->getTitle(),this);
-    duration = new QLabel(QString::number(t->getDuration().getHours())+"H"+QString::number(t->getDuration().getMinutes()),this);
+    unsigned int H = t->getDuration().getHours();
+    unsigned int M = t->getDuration().getMinutes();
+    QString h = (H<10)?"0"+QString::number(H):""+QString::number(H);
+    QString m = (M<10)?"0"+QString::number(M):""+QString::number(M);
+    duration = new QLabel(h+" H "+m,this);
     disponibility = new QLabel(t->getDisponibility().toString(),this);
     deadline = new QLabel(t->getDeadline().toString(),this);
 
@@ -653,4 +800,70 @@ ProjectInfo::ProjectInfo(Project *t, QWidget *parent) : QDialog(parent) {
     formLayout->addRow("tasks : ",tasks);
 
     setLayout(formLayout);
+}
+
+EditAssociationConstraint::EditAssociationConstraint(Task *t, QWidget *parent) : task(t), QDialog(parent) {
+    predecessors = new QTreeView(this);
+    successors = new QTreeView(this);
+    predecessors->setSelectionMode(QAbstractItemView::MultiSelection);
+    successors->setSelectionMode(QAbstractItemView::MultiSelection);
+    predecessors->setModel(MainWindow::tasksModel);
+    successors->setModel(MainWindow::tasksModel);
+
+    addB = new QPushButton("Add",this);
+    addB->connect(addB,SIGNAL(clicked()),this,SLOT(addAssociation()));
+    removeB = new QPushButton("Remove",this);
+    removeB->connect(removeB,SIGNAL(clicked()),this,SLOT(removeAssociation()));
+    formLayout = new QFormLayout(this);
+    formLayout->addRow("predecessors : ",predecessors);
+    formLayout->addRow("successors : ",successors);
+    formLayout->addRow(addB);
+    formLayout->addRow(removeB);
+
+    setLayout(formLayout);
+}
+
+void EditAssociationConstraint::addAssociation() {
+    AssociationManager* am = &(AssociationManager::getInstance());
+    NonPreemptiveFactory* factory = &(NonPreemptiveFactory::getInstance());
+    try {
+        foreach (const QModelIndex &index,predecessors->selectionModel()->selectedIndexes())
+                am->addAssociation(&(factory->getTask(MainWindow::tasksModel->itemFromIndex(index)->text())),task);
+        foreach (const QModelIndex &index,successors->selectionModel()->selectedIndexes())
+                am->addAssociation(task,&(factory->getTask(MainWindow::tasksModel->itemFromIndex(index)->text())));
+        dynamic_cast<MainWindow*>(QWidget::window())->refreshProjectsTreeModel();
+        this->destroy();
+    }
+    catch (CalendarException e) {
+        QMessageBox* errMessage = new QMessageBox(this);
+        errMessage->setText(e.getInfo());
+        errMessage->show();
+    }
+}
+
+void EditAssociationConstraint::removeAssociation() {
+    AssociationManager* am = &(AssociationManager::getInstance());
+    NonPreemptiveFactory* factory = &(NonPreemptiveFactory::getInstance());
+    try {
+        foreach (const QModelIndex &index,predecessors->selectionModel()->selectedIndexes())
+                am->removeAssociation(&(factory->getTask(MainWindow::tasksModel->itemFromIndex(index)->text())),task);
+        foreach (const QModelIndex &index,successors->selectionModel()->selectedIndexes())
+                am->removeAssociation(task,&(factory->getTask(MainWindow::tasksModel->itemFromIndex(index)->text())));
+        dynamic_cast<MainWindow*>(QWidget::window())->refreshProjectsTreeModel();
+        this->destroy();
+    }
+    catch (CalendarException e) {
+        QMessageBox* errMessage = new QMessageBox(this);
+        errMessage->setText(e.getInfo());
+        errMessage->show();
+    }
+}
+
+CalendarTable::CalendarTable(QWidget *parent) : QTableView(parent) {
+    this->setModel(MainWindow::independentTasksModel);
+
+    rowHeight(30);
+    columnWidth(30);
+    if (!showGrid()) qDebug()<<"pas bon";
+    else qDebug()<<"ok";
 }

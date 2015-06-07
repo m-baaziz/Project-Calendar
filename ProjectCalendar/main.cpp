@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
         compo.addSubTask(cf->getTask("LG62"));
         //compo.addSubTask(ct1);
         AssociationManager* am = &(AssociationManager::getInstance());
-        am->addAssociation(&ct1,&compo);
+        //am->addAssociation(&ct1,&compo);
         //am->addAssociation(&compo,&ct1);
         //cf->removeTask(&ct1);
         //f->removeTask(&(cnp->getSubTypedTask("LG62")));
@@ -56,14 +56,16 @@ int main(int argc, char *argv[]) {
         }
         //compo.addSubTask(ct1);
         ProjectFactory* pf = &(ProjectFactory::getInstance());
-        Project& pro1 = pf->addProject("Calendar","Project Agenda Calendar",Duration(1,30),QDate(2013,02,12),QDate(2045,05,06));
+        Project& pro1 = pf->addProject("Calendar","Project Agenda Calendar",Duration(1,30),QDate(1950,02,12),QDate(2500,05,06));
         qDebug()<<"premier project : "<<pro1.getTitle();
         CompositeFactory::ProjectValidTasksIterationStrategy Strat3;
         qDebug()<<"Les Valides : ";
         for (TasksIterator it = cf->getIterator(&Strat3); !(it.isDone()); it.next()) {
             qDebug()<<it.current().getId();
         }
+        //pro1.addTask(compo);
         pro1.addTask(cp->getTask("NF17"));
+        //pro1.addTask(ct1);
         //pf->removeProject(&pro1);
         //cf->freeInstance();
        // cp->freeInstance();

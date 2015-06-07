@@ -1,5 +1,7 @@
 #include "Association.h"
 #include "Task.h"
+#include "Project.h"
+#include "TaskManager.h"
 
 template<>
 Handler<AssociationManager> Singleton<AssociationManager>::handler = Handler<AssociationManager>();
@@ -46,12 +48,17 @@ Association& AssociationManager::addAssociation(Task* p, Task* s) {
     QDate temp = p->getDisponibility();
     temp.addDays(p->getDuration().getDurationInHours()/24);
     if (temp > s->getDeadline()) throw CalendarException("Error : "+p->getId()+" can't preceed "+s->getId()+" because it can't be realized before its successor's deadline");
+    Project* pProj = ProjectFactory::getInstance().getTaskProject(p);
+    Project* sProj = ProjectFactory::getInstance().getTaskProject(s);
+    if ((p || s) && pProj!=sProj) throw CalendarException("Error : in order to add precedence constraints on tasks that are added to projects, predecessor "+p->getId()+" and successor shall belong to the same project "+s->getId());
     Association* toAdd = new Association(p,s);
     assos.push_back(toAdd);
     return *toAdd;
 }
 
 void AssociationManager::removeAssociation(Task* p, Task* s) {
+    CompositeFactory* cf = &(CompositeFactory::getInstance());
+    if ((cf->isTaskIncluded(p->getId()))==s || (cf->isTaskIncluded(s->getId())==p)) throw CalendarException("Error : it is impossible to remove precedence constraints between a subtask and its composite task");
     for (AssociationsContainer::iterator it = assos.begin(); it!=assos.end(); ++it) {
         if ((*it)->getPredecessor()==p && (*it)->getSuccessor()==s) {
             delete *it;
@@ -59,6 +66,7 @@ void AssociationManager::removeAssociation(Task* p, Task* s) {
             return;
         }
     }
+    throw CalendarException("Error : "+p->getId()+"does not preceed "+s->getId());
 }
 
 TasksContainer AssociationManager::getTaskPredecessors(Task* t) {

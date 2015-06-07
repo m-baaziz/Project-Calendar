@@ -16,7 +16,9 @@ protected:
     bool isCompleted;
     TasksContainer tasks;
 
-    Project(const QString& id, const QString& t, const Duration& dur, const QDate& dispo, const QDate& term):identifier(id), title(t), duration(dur), disponibility(dispo), deadline(term), isCompleted(false),Aggregator<Task>(&tasks){
+    Duration durationBuffer; // when a task is added to the project, it increses this duration buffer with the task's duration, when this duration buffer becomes bigger than duration, duration is set with durationBuffer's value.
+
+    Project(const QString& id, const QString& t, const Duration& dur, const QDate& dispo, const QDate& term):identifier(id), title(t), duration(dur), disponibility(dispo), deadline(term), isCompleted(false),durationBuffer(0),Aggregator<Task>(&tasks){
         if (id.size()==0 || t.size()==0) throw CalendarException("Error : a Project has to have an id and a title");
         if (dispo>term) throw CalendarException("Error : a Project disponibility can't come after its deadline");
     }
@@ -52,6 +54,7 @@ public:
      */
     void removeTask(const QString& id);
     void softRemoveTask(const QString& id);
+    TasksContainer getRootTasks();
 };
 
 typedef std::vector<Project*> ProjectsContainer;
@@ -70,7 +73,7 @@ protected:
 public:
     void load(const QString& f);
     void save(const QString& f);
-
+    Project* getTaskProject(Task* t);
     bool isProjectHere(const QString& id);
     bool isProjectHere(const Project* const p);
     bool isTaskavalaible(Task* t);
