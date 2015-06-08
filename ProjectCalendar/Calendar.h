@@ -94,6 +94,13 @@ public:
     bool operator<(const Duration& d) {
         return minutes<d.getDurationInMinutes();
     }
+    QString toString() {
+        unsigned int H = getHours();
+        unsigned int M = getMinutes();
+        QString h = (H<10)?"0"+QString::number(H):""+QString::number(H);
+        QString m = (M<10)?"0"+QString::number(M):""+QString::number(M);
+        return h+" H "+m;
+    }
 };
 
 QTextStream& operator<<(QTextStream& flow, const Duration& d);

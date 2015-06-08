@@ -41,7 +41,7 @@ protected:
                                                 // a programmationManager can't really set a programmation for a CompositeTask, it has to set them for its subtasks
     template<class T,class F>                   // a programmationManager when setting a programmation has to check Associations constraints.
     friend class TaskFactory;                   // completed tasks have special treatments (special displaying for exemple ...)
-                                                // when a task is completed, check if it is a final task of a project, of yes, then set the Project as completed.
+                                                // when a task is completed, check if it is a final task of a project, if yes, then set the Project as completed.
 
 public:
     QString getId() const {return identifier;}

@@ -72,10 +72,10 @@ int main(int argc, char *argv[]) {
         //cnp->freeInstance();
 
 
-    QApplication app(argc, argv);
+    /*QApplication app(argc, argv);
     MainWindow wid;
     wid.show();
 
-    return app.exec();
-        //return 0;
+    return app.exec();*/
+       return 0;
 }

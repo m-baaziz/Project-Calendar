@@ -719,11 +719,7 @@ TaskInfo::TaskInfo(Task *t, QWidget *parent) : QDialog(parent) {
     QString temp = "";
     identifier = new QLabel(t->getId(),this);
     title = new QLabel(t->getTitle(),this);
-    unsigned int H = t->getDuration().getHours();
-    unsigned int M = t->getDuration().getMinutes();
-    QString h = (H<10)?"0"+QString::number(H):""+QString::number(H);
-    QString m = (M<10)?"0"+QString::number(M):""+QString::number(M);
-    duration = new QLabel(h+" H "+m,this);
+    duration = new QLabel(t->getDuration().toString(),this);
     disponibility = new QLabel(t->getDisponibility().toString(),this);
     deadline = new QLabel(t->getDeadline().toString(),this);
     if (t->getTaskType()==COMPOSITE) {
