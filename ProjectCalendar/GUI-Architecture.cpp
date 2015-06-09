@@ -230,18 +230,11 @@ void MainWindow::setProjectsTreeModel() {
             QStandardItem* temp = new QStandardItem((*it)->getId());
             temp->setFlags(temp->flags() & ~Qt::ItemIsEditable);
             tempP->appendRow(temp);
-            //parent = temp;   // this is what to do for trees -> compositions
             TasksContainer successors = AssociationManager::getInstance().getTaskSuccessors(*it);
             for (TasksContainer::iterator it2 = successors.begin(); it2!=successors.end(); ++it2) {
-                 injectSuccessorInModel(temp,*(*it2), itp.current());
+                injectSuccessorInModel(temp,*(*it2), itp.current());
             }
         }
-        /*for (Iterator<CompositeTask> it = itp.current().getIterator<CompositeTask>(); !(it.isDone()); it.next()) {
-            TasksContainer predecessors = AssociationManager::getInstance().getTaskPredecessors(&(it.current()));
-            for (TasksContainer::iterator it2 = predecessors.begin(); it2!=predecessors.end(); ++it2) {
-                 injectSuccessorInModel(tempP,*(*it2), itp.current());
-            }
-        }*/
     }
 }
 
@@ -407,7 +400,9 @@ void MyComboBox::handleSelectionChanged(int index){
 void MainWindow::refreshProjectsModel() {
     MainWindow::projectsModel->clear();
     setProjectsInMenu();
+    qDebug()<<"end of set project";
     refreshTasksModel();
+    qDebug()<<"end of refresh";
 }
 
 /*void MainWindow::refreshEventsModel() {
@@ -482,17 +477,13 @@ try {
     QDate dispo = disponibility->date();
     QDate term = deadline->date();
     MainWindow* castedParent = dynamic_cast<MainWindow*>(QWidget::window());
-
     NonPreemptiveFactory* npf = &(NonPreemptiveFactory::getInstance());
     ProjectFactory* pf = &(ProjectFactory::getInstance());
     Project& proj = pf->addProject(id,tit,dur,dispo,term);
-
     foreach (const QModelIndex &index,tasks->selectionModel()->selectedIndexes()) // we do this to make sure that we add tasks to the project only if the new proeject is valid (in order not to delete the tasks when we would delete the wrong project).
           proj.isTaskValidForProject(npf->getTask(MainWindow::independentTasksModel->itemFromIndex(index)->text()));
-
     foreach (const QModelIndex &index,tasks->selectionModel()->selectedIndexes())
           proj.addTask(npf->getTask(MainWindow::independentTasksModel->itemFromIndex(index)->text()));
-
 
     castedParent->refreshIndependentTasksModel();
     castedParent->refreshProjectsModel();
@@ -513,7 +504,6 @@ NewTaskB::NewTaskB(const QString& text, QWidget* parent):QPushButton(text,parent
 }
 
 void NewTaskB::popTaskForm(){
-    //QDialog* form = new QDialog;
     NewTaskForm* form = new NewTaskForm(this->parentWidget());
     form->show();
 }

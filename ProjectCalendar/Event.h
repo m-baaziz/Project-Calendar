@@ -118,11 +118,12 @@ public:
             if ((*it)->getDate() == d) toSend.push_back(*it);
         return toSend;
     }
-    SimpleEventsContainer getEventsByDateAndTime(const QDate& d, const QTime& t) {
-        EventsContainer toSend = EventsContainer();
-        for (typename SimpleEventsContainer::iterator it = globalEvents->begin(); it!=globalEvents->end(); ++it)
-            if ((*it)->getDate()==d && (*it)->getTime()==t) toSend.push_back(*it);
-        return toSend;
+    Event* getEventByDateAndTime(const QDate& d, const QTime& t) {
+        Event* toSend = 0;
+        for (typename SimpleEventsContainer::iterator it = globalEvents->begin(); it!=globalEvents->end(); ++it) {
+            if ((*it)->getDate()==d && (*it)->getTime()==t) toSend =*it;
+            return toSend;
+        }
     }
 
     EventsContainer getSpecificEventsByDate(const QDate& d) {
@@ -131,12 +132,18 @@ public:
             if ((*it)->getDate() == d) toSend.push_back(*it);
         return toSend;
     }
-    EventsContainer getSpecificEventsByDateAndTime(const QDate& d, const QTime& t) {
-        EventsContainer toSend = EventsContainer();
-        for (typename EventsContainer::iterator it = events.begin(); it!=events.end(); ++it)
-            if ((*it)->getDate()==d && (*it)->getTime()==t) toSend.push_back(*it);
+    E* getSpecificEventByDateAndTime(const QDate& d, const QTime& t) {
+        E* toSend = 0;
+        for (typename EventsContainer::iterator it = events.begin(); it!=events.end(); ++it) {
+            if ((*it)->getDate()==d && (*it)->getTime()==t) {
+                toSend=*it;
+                break;
+            }
+        }
+        if (toSend==0) qDebug()<<"c'est zero";
         return toSend;
     }
+
 
     bool isTimeZoneFree(const QDate& d, const QTime& t, const Duration& du) {
         Event* temp = 0;

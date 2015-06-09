@@ -3,6 +3,8 @@
 #include "TaskManager.h"
 #include "Association.h"
 #include "Project.h"
+#include "Event.h"
+#include "Programmation.h"
 #include "GUI-Architecture.h"
 #include <QDebug>
 
@@ -17,7 +19,7 @@
 
 int main(int argc, char *argv[]) {
     QTextStream cout(stdout, QIODevice::WriteOnly);
-
+//try{
         Duration d1(34);
         cout<<d1<<"\n";
         CompositeFactory* cf = &(CompositeFactory::getInstance());
@@ -46,7 +48,8 @@ int main(int argc, char *argv[]) {
         compo.addSubTask(cf->getTask("LG62"));
         //compo.addSubTask(ct1);
         AssociationManager* am = &(AssociationManager::getInstance());
-        //am->addAssociation(&ct1,&compo);
+        am->addAssociation(&ct1,&compo);
+        am->addAssociation(&prem2,&prem3);
         //am->addAssociation(&compo,&ct1);
         //cf->removeTask(&ct1);
         //f->removeTask(&(cnp->getSubTypedTask("LG62")));
@@ -56,7 +59,7 @@ int main(int argc, char *argv[]) {
         }
         //compo.addSubTask(ct1);
         ProjectFactory* pf = &(ProjectFactory::getInstance());
-        Project& pro1 = pf->addProject("Calendar","Project Agenda Calendar",Duration(1,30),QDate(1950,02,12),QDate(2500,05,06));
+        Project& pro1 = pf->addProject("Calendar","Project Agenda Calendar",Duration(1,30),QDate(1900,02,12),QDate(2500,05,06));
         qDebug()<<"premier project : "<<pro1.getTitle();
         CompositeFactory::ProjectValidTasksIterationStrategy Strat3;
         qDebug()<<"Les Valides : ";
@@ -68,14 +71,27 @@ int main(int argc, char *argv[]) {
         //pro1.addTask(ct1);
         //pf->removeProject(&pro1);
         //cf->freeInstance();
-       // cp->freeInstance();
+        // cp->freeInstance();
         //cnp->freeInstance();
+        //pf->addProject("edfrev","zefdzed",Duration(0),QDate(1900,1,1),QDate(3000,1,1));
+        CompositeTask& tempop = cf->addTask("zedzed","dzed",Duration(0),QDate(1940,1,1),QDate(2200,2,2));
+        //tempop.addSubTask(compo);
+        tempop.addSubTask(ct1);
+        pro1.addTask(tempop);
+        ProgrammationFactory* progF = &(ProgrammationFactory::getInstance());
+        progF->scheduleTask(&prem2,"initialisation de la tache",QDate(2019,12,2),QTime(12,00),Duration(2,30),"Compy City");
+        progF->scheduleTask(&prem3,"initialisation de la tache",QDate(2023,12,2),QTime(12,00),Duration(2,30),"Compy City");
+        qDebug()<<progF->getSpecificEventByDateAndTime(QDate(2023,12,2),QTime(12,00))->getTask()->getId();
 
 
-    /*QApplication app(argc, argv);
+/*    }
+catch (CalendarException e) {
+        qDebug()<<e.getInfo();
+    }*/
+    QApplication app(argc, argv);
     MainWindow wid;
     wid.show();
 
-    return app.exec();*/
-       return 0;
+    return app.exec();
+    //   return 0;
 }

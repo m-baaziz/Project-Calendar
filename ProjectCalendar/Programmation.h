@@ -9,7 +9,7 @@ class Programmation : public Event {
 
     UnitaryTask* task;
 
-    Programmation(const QString& n,const QDate& d, const QTime& ti, const QString& p,const QDate& da,const Duration& du,UnitaryTask* t,const ParticipantsContainer& par = ParticipantsContainer()) :
+    Programmation(const QString& n,const QDate& d, const QTime& ti, const QString& p,const Duration& du,UnitaryTask* t,const ParticipantsContainer& par = ParticipantsContainer()) :
         Event(n,d,ti,du,p,par),task(t) {}
     Programmation(const Programmation& p);
     Programmation& operator=(const Programmation& p);
@@ -17,7 +17,7 @@ class Programmation : public Event {
 
     friend class ProgrammationFactory;
 public:
-    Task* getTask() {return task;}
+    UnitaryTask* getTask() {return task;}
 
     void setDate(const QDate& da) {date = da;}
     void setDuration(const Duration& du) {duration = du;}
@@ -30,7 +30,7 @@ class ProgrammationFactory : public EventFactory<Programmation,ProgrammationFact
     friend class Singleton<ProgrammationFactory>;
     friend class Handler<ProgrammationFactory>;
 protected:
-    ProgrammationFactory();
+    ProgrammationFactory():EventFactory(){}
 public:
     bool isScheduled(UnitaryTask* t);
     /*!
@@ -39,8 +39,7 @@ public:
      * Adds a programmation to a given Unitary Task;
      */
     Programmation& scheduleTask(UnitaryTask* t,const QString& n,const QDate& d, const QTime& ti,
-                                const Duration& du,const QString& p,const QDate& da,
-                                const ParticipantsContainer& par = ParticipantsContainer());
+                                const Duration& du,const QString& p,const ParticipantsContainer& par = ParticipantsContainer());
     /*!
      * \brief getTimeToSchedule
      * \param t
@@ -56,7 +55,7 @@ public:
      * \return
      * Method that returns every programmations of a preemptive task.
      */
-    EventsContainer getProgrammations(PreemptiveTask* t);
+    EventsContainer getProgrammations(UnitaryTask* t);
     /*!
      * \brief getProgrammations
      * \param t
@@ -64,7 +63,7 @@ public:
      * \return
      * Method that returns every programmations of a preemptive task in a given date.
      */
-    EventsContainer getProgrammations(PreemptiveTask *t, const QDate& d);
+    EventsContainer getProgrammations(UnitaryTask *t, const QDate& d);
     /*!
      * \brief getTaskToSchedule
      * \param t
@@ -79,7 +78,8 @@ public:
      * Removes all programamtions of a unitary task.
      */
     void removeProgrammation(UnitaryTask* t);
-    void removeSpecificProgrammation(PreemptiveTask* t, const QDate& d, const QTime& ti);
+    void removeSpecificProgrammation(UnitaryTask* t, const QDate& d, const QTime& ti);
+    void achieveEvent(const QString& name) override;
 };
 
 #endif // PROGRAMMATION_H
