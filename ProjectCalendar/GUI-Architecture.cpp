@@ -32,13 +32,13 @@ MainWindow::MainWindow(QWidget *parent): QWidget(parent) {
 
     itemTypeSelector = new MyComboBox(this);
     projectsTree = new QTreeView(this);
-    eventsTree = new QTreeView(this);
+    projectsTreeView = new QTreeView(this);
     independentTasksTree = new QTreeView(this);
-    projectsTree->setModel(projectsTreeModel);
+    projectsTree->setModel(projectsModel);
+    projectsTreeView->setModel(projectsTreeModel);
     independentTasksTree->setModel(independentTasksModel);
-    //eventsTree->setModel(eventsModel);
     independentTasksTree->hide();
-    eventsTree->hide();
+    projectsTree->hide();
 
     projectsTree->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(projectsTree, SIGNAL(customContextMenuRequested(const QPoint&)),
@@ -48,20 +48,24 @@ MainWindow::MainWindow(QWidget *parent): QWidget(parent) {
     connect(independentTasksTree, SIGNAL(customContextMenuRequested(const QPoint&)),
         this, SLOT(showTaskContextMenu(const QPoint&)));
 
+    projectsTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(projectsTreeView,SIGNAL(customContextMenuRequested(QPoint)),
+            this,SLOT(showProjectContextMenu(QPoint)));
+
     itemTypeSelector->addItem("Projects");
     itemTypeSelector->addItem("Independent Tasks");
-    //itemTypeSelector->addItem("Events");
+    itemTypeSelector->addItem("Projects Trees");
 
     itemsMenuLayer->addWidget(itemTypeSelector);
     itemsMenuLayer->addWidget(projectsTree);
-    itemsMenuLayer->addWidget(eventsTree);
+    itemsMenuLayer->addWidget(projectsTreeView);
     itemsMenuLayer->addWidget(independentTasksTree);
 
     //setProjectsInMenu(); // no need to call it, already done by the first "indexChanged" event on MyComboBox
     //setEventsInMenu();
     setIndependentTasksInMenu();
     setTasksInModel();
-    //setProjectsTreeModel();
+    setProjectsTreeModel();
 
     // in displayLayer
 
@@ -69,8 +73,6 @@ MainWindow::MainWindow(QWidget *parent): QWidget(parent) {
     treeScene = new QGraphicsScene;
     treeView = new QGraphicsView(treeScene);
 
-    //QRect viewRect(-100, -100, 200, 200);
-    //treeView->setSceneRect(viewRect);
     treeScene->setSceneRect(250,120,500,500);
     treeView->setScene(treeScene);
     treeView->hide();
@@ -124,8 +126,18 @@ void MainWindow::drawTreeHelper(const unsigned int Y,const unsigned int X, std::
             FY = (*it).y;
         }
     }
+    int posInc = 0;
+    int negInc = 0;
+    int x;
     for (unsigned int i = 0; i<sonNB; i++) {
-        int x = X-nodeStartOffset+i*space;
+        if (i%2==0) {
+            x = X-nodeStartOffset+posInc*space;
+            posInc++;
+        }
+        else {
+            x = X-nodeStartOffset+(sonNB*space)-negInc*space;
+            negInc++;
+        }
         QString id = father.child(i,0).data().toString();
         bool present = false;
         for (std::vector<ProjectTreeNode>::iterator it=V.begin(); it!=V.end(); ++it){
@@ -154,14 +166,16 @@ void MainWindow::drawTreeHelper(const unsigned int Y,const unsigned int X, std::
 void MainWindow::drawProjectTree(QModelIndex projectIndex) {
     std::vector<ProjectTreeNode> V;
     treeScene->addSimpleText(projectIndex.data().toString())->setPos(500,40);
-    drawTreeHelper(40,500,V,projectIndex,1000/projectsTreeModel->rowCount(projectIndex));
-    unsigned int maxY = 0;  // the maximum y coordinate, helps us to place the last "end" node.
-    for (std::vector<ProjectTreeNode>::iterator it = V.begin(); it!=V.end(); ++it) if ((*it).y>maxY) maxY=(*it).y;
-    treeScene->addSimpleText("END")->setPos(500,maxY+100);
-    for (std::vector<ProjectTreeNode>::iterator it = V.begin(); it!=V.end(); ++it) {
-        if (projectsTreeModel->rowCount((*it).id)==0) {
-            treeScene->addLine((*it).x+20,(*it).y+20,500+20,maxY+100,QPen(QColor("purple"),2));
-            treeScene->addPolygon(ArrowHead(500,maxY+80,(*it).x,(*it).y),QPen(QColor("black")),QBrush(Qt::GlobalColor::black));
+    if (projectsTreeModel->rowCount(projectIndex) != 0) {
+        drawTreeHelper(40,500,V,projectIndex,1000/projectsTreeModel->rowCount(projectIndex));
+        unsigned int maxY = 0;  // the maximum y coordinate, helps us to place the last "end" node.
+        for (std::vector<ProjectTreeNode>::iterator it = V.begin(); it!=V.end(); ++it) if ((*it).y>maxY) maxY=(*it).y;
+        treeScene->addSimpleText("END")->setPos(500,maxY+100);
+        for (std::vector<ProjectTreeNode>::iterator it = V.begin(); it!=V.end(); ++it) {
+            if (projectsTreeModel->rowCount((*it).id)==0) {
+                treeScene->addLine((*it).x+20,(*it).y+20,500+20,maxY+100,QPen(QColor("purple"),2));
+                treeScene->addPolygon(ArrowHead(500,maxY+80,(*it).x,(*it).y),QPen(QColor("black")),QBrush(Qt::GlobalColor::black));
+            }
         }
     }
 }
@@ -262,23 +276,23 @@ void MainWindow::injectSubTaskInModel(QStandardItem* parent, Task& son) {
 
 void MainWindow::showProjectsInMenu() {
     refreshProjectsModel();
-    eventsTree->hide();
+    projectsTreeView->hide();
     independentTasksTree->hide();
     projectsTree->show();
 }
 
-/*void MainWindow::showEventsInMenu() {
-    refreshEventsModel();
+void MainWindow::showProjectsTreeInMenu() {
+    refreshProjectsTreeModel();
     projectsTree->hide();
     independentTasksTree->hide();
-    eventsTree->show();
-}*/
+    projectsTreeView->show();
+}
 
 void MainWindow::showIndependentTasksInMenu() {
     refreshIndependentTasksModel();
     projectsTree->hide();
     independentTasksTree->show();
-    eventsTree->hide();
+    projectsTreeView->hide();
 }
 
 void MainWindow::showProjectContextMenu(const QPoint &pos) {
@@ -287,6 +301,8 @@ void MainWindow::showProjectContextMenu(const QPoint &pos) {
     Project* proj;
     Task* t;
     QString selectedProject = projectsTree->indexAt(pos).data(Qt::DisplayRole).toString();
+    if (!(projectsTreeView->isHidden()))
+        selectedProject = projectsTreeView->indexAt(pos).data(Qt::DisplayRole).toString();
     try {
         proj = &(ProjectFactory::getInstance().getProject(selectedProject));
         menu->addAction("add tasks");
@@ -310,7 +326,13 @@ void MainWindow::showProjectContextMenu(const QPoint &pos) {
         }
         if (selectedItem && selectedItem->text()=="show tree") {
             treeScene->clear();
-            drawProjectTree(projectsTree->indexAt(pos));
+            if (projectsTreeView->isHidden()) {
+                itemTypeSelector->setCurrentIndex(2);
+                drawProjectTree(projectsTreeView->indexAt(pos));  // called from the projectsTreeView
+            }
+            else {
+                drawProjectTree(projectsTreeView->indexAt(pos));    // called from the projectsTree
+            }
             calendarTable->hide();
             treeView->show();
         }
@@ -318,7 +340,9 @@ void MainWindow::showProjectContextMenu(const QPoint &pos) {
     catch (CalendarException e) {
 
 
-    QString selectedTask = projectsTree->indexAt(pos).data(Qt::DisplayRole).toString();
+        QString selectedTask = projectsTree->indexAt(pos).data(Qt::DisplayRole).toString();
+        if (!(projectsTreeView->isHidden()))
+            selectedTask = projectsTreeView->indexAt(pos).data(Qt::DisplayRole).toString();
     try {
         t = &(NonPreemptiveFactory::getInstance().getTask(selectedTask));
         if (t->getTaskType()==COMPOSITE) menu->addAction("add subtasks");
@@ -394,15 +418,14 @@ void MainWindow::showTaskContextMenu(const QPoint &pos) {
 void MyComboBox::handleSelectionChanged(int index){
     if (index==0) dynamic_cast<MainWindow*>(parent())->showProjectsInMenu();
     if (index==1) dynamic_cast<MainWindow*>(parent())->showIndependentTasksInMenu();
+    if (index==2) dynamic_cast<MainWindow*>(parent())->showProjectsTreeInMenu();
 }
 
 
 void MainWindow::refreshProjectsModel() {
     MainWindow::projectsModel->clear();
     setProjectsInMenu();
-    qDebug()<<"end of set project";
     refreshTasksModel();
-    qDebug()<<"end of refresh";
 }
 
 /*void MainWindow::refreshEventsModel() {
@@ -850,6 +873,4 @@ CalendarTable::CalendarTable(QWidget *parent) : QTableView(parent) {
 
     rowHeight(30);
     columnWidth(30);
-    if (!showGrid()) qDebug()<<"pas bon";
-    else qDebug()<<"ok";
 }

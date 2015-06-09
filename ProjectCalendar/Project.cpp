@@ -69,13 +69,22 @@ Project::~Project() {
 
 TasksContainer Project::getRootTasks() {
     TasksContainer temp;
+    bool isHere = false;  // to test if a task has already been added into the buffer.
     AssociationManager::AssociationRootTasksIterationStrategy strat;
     AssociationManager::NotAssociationRootTasksIterationStrategy strat1;
     for (Iterator<Task> it = getIterator(&strat); !(it.isDone()); it.next())
         temp.push_back(&(it.current()));
     for (Iterator<CompositeTask> it = getIterator<CompositeTask>(&strat1); !(it.isDone()); it.next())
         it.current().getAssociationRootTasks(&temp);
-    return temp;
+    TasksContainer toSend = TasksContainer();
+    for (TasksContainer::iterator it2 = temp.begin(); it2!=temp.end(); ++it2) { // we remove duplicates
+        for (TasksContainer::iterator it = toSend.begin(); it!=toSend.end(); ++it) {
+            if (*it2==*it) isHere = true;
+            break;
+        }
+        if (!isHere) toSend.push_back(*it2);
+    }
+    return toSend;
 }
 
 ////////////////////////////////////////////////////////////////////

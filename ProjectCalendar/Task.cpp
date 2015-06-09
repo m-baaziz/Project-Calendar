@@ -99,7 +99,9 @@ TasksContainer* CompositeTask::getAssociationRootTasks(TasksContainer* buffer) {
     for (Iterator<Task> it = getIterator(&strat); !(it.isDone()); it.next()) {
         for (TasksContainer::iterator it2 = buffer->begin(); it2!=buffer->end(); ++it2)
             if ((*it2)==&(it.current())) isHere = true;
-        if (!isHere) buffer->push_back(&(it.current()));
+        if (!isHere) {
+            buffer->push_back(&(it.current()));
+        }
     }
     for (Iterator<CompositeTask> it = getIterator<CompositeTask>(&strat1); !(it.isDone()); it.next())
         buffer->insert(buffer->end(),it.current().getAssociationRootTasks(buffer)->begin(),it.current().getAssociationRootTasks(buffer)->end());

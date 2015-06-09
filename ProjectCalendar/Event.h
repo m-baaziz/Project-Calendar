@@ -140,7 +140,6 @@ public:
                 break;
             }
         }
-        if (toSend==0) qDebug()<<"c'est zero";
         return toSend;
     }
 

@@ -232,8 +232,8 @@ class MainWindow : public QWidget {
 
     MyComboBox* itemTypeSelector;
     QTreeView* projectsTree;
-    QTreeView* eventsTree;
     QTreeView* independentTasksTree;
+    QTreeView* projectsTreeView;
 
     void setTasksInModel();
     void setProjectsInMenu();
@@ -273,10 +273,9 @@ public slots:
     void refreshProjectsModel();
     void refreshIndependentTasksModel();
     void refreshProjectsTreeModel();
-    //void refreshEventsModel();
     void showProjectsInMenu();
     void showIndependentTasksInMenu();
-    //void showEventsInMenu();
+    void showProjectsTreeInMenu();
     void showProjectContextMenu(const QPoint& pos);
     void showTaskContextMenu(const QPoint& pos);
 

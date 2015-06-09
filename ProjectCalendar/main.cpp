@@ -48,7 +48,7 @@ int main(int argc, char *argv[]) {
         compo.addSubTask(cf->getTask("LG62"));
         //compo.addSubTask(ct1);
         AssociationManager* am = &(AssociationManager::getInstance());
-        am->addAssociation(&ct1,&compo);
+        //am->addAssociation(&ct1,&compo);
         am->addAssociation(&prem2,&prem3);
         //am->addAssociation(&compo,&ct1);
         //cf->removeTask(&ct1);
