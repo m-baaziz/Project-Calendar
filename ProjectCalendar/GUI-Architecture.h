@@ -38,6 +38,7 @@
 #include "TaskManager.h"
 #include "Project.h"
 #include "Association.h"
+#include "Programmation.h"
 
 
 class ArrowHead : public QPolygon {
@@ -208,6 +209,62 @@ public slots:
 
 };
 
+//class EventComboBox : public QComboBox {
+//    Q_OBJECT
+//public:
+//    EventComboBox(QWidget* parent=0):QComboBox(parent){
+//    this->setParent(parent);
+//    connect(this , SIGNAL(currentIndexChanged(int)),this,SLOT(handleSelectionChanged(int)));
+//    };
+//    ~ MyComboBox(){}
+
+//public slots:
+//      void handleSelectionChanged(int index);
+//};
+
+
+class EventForm : public QWidget {
+    Q_OBJECT
+
+    QComboBox* EventTypeSelector;
+    QLineEdit* name;
+    QDateEdit* date;
+    QTimeEdit* time;
+    QTimeEdit* duration;
+    QLineEdit* place;
+    QLineEdit* participants;
+    QLineEdit* task;
+    QComboBox* type;
+    QDialogButtonBox* buttonBox;
+
+    QLabel* nameL;
+    QLabel* dateL;
+    QLabel* timeL;
+    QLabel* durationL;
+    QLabel* placeL;
+    QLabel* participantsL;
+    QLabel* taskL;
+    QLabel* typeL;
+
+    QHBoxLayout* formLayout;
+    QVBoxLayout* part1;
+    QVBoxLayout* part2;
+    QHBoxLayout* V1;
+    QHBoxLayout* V2;
+    QFormLayout* F1;
+    QFormLayout* F2;
+    QFormLayout* F3;
+    QFormLayout* F4;
+public:
+    EventForm(QWidget* parent);
+
+    void addProgrammation();
+    void addActivity();
+public slots:
+    void addElement();
+    void handleSelectionChanged(int index);
+};
+
 class MainWindow : public QWidget {
     Q_OBJECT
 
@@ -216,6 +273,7 @@ class MainWindow : public QWidget {
     QHBoxLayout* workSpaceLayer;
     QVBoxLayout* itemsMenuLayer;
     QVBoxLayout* displayLayer;
+    QHBoxLayout* eventLayer;
 
     // in topLayer
 
@@ -250,6 +308,10 @@ class MainWindow : public QWidget {
     void injectSubTaskInModel(QStandardItem* parent, Task& son);
     void injectSuccessorInModel(QStandardItem* parent, Task& son, Project& proj);
     void drawProjectTree(QModelIndex projectIndex);
+
+    // bottom Event Layer
+
+    EventForm* eventForm;
 
     struct ProjectTreeNode {
         QModelIndex id;
@@ -338,17 +400,6 @@ public slots:
     void addAssociation();
     void removeAssociation();
 };
-
-/*class TempTree : public QTreeView {
-    Q_OBJECT
-public :
-    TempTree(QWidget* parent) : QTreeView(parent) {
-        this->setModel(MainWindow::independentTasksModel);
-        QPainter* paint = new QPainter();
-        QRegion* region = new QRegion(50,50,100,100);
-        this->drawTree(paint,);
-    }
-};*/
 
 
 #endif // GUIARCHITECTURE_H

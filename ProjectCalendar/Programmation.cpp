@@ -14,6 +14,8 @@ bool ProgrammationFactory::isScheduled(UnitaryTask *t) {
 }
 
 Programmation& ProgrammationFactory::scheduleTask(UnitaryTask *t, const QString &n, const QDate &d, const QTime &ti, const Duration &du, const QString &p, const ParticipantsContainer &par) {
+    if (n.size()==0 || p.size()==0) throw CalendarException("Error : Invalid parameters");
+    if (isEventHere(n)) throw CalendarException("Error : a Programmation with the name of "+n+" has already been done");
     if (isScheduled(t)) throw CalendarException("Error : Task "+t->getId()+" already scheduled");
     if (d<(t->getDisponibility())) throw CalendarException("Error : a Task can't be scheduled before its disponibility date");
     if (QDate(d.year(),d.month(),d.day()+(ti.hour()+du.getDurationInHours())/24)>t->getDeadline()) throw CalendarException("Error : a Task can't be scheduled after its deadline");

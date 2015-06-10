@@ -17,7 +17,12 @@ class Association {
     Association():predecessor(0),successor(0){}
     Association(Task* p, Task* s): predecessor(p),successor(s){}
     Association& operator=(const Association& a);
-    ~Association(){}
+    ~Association(){
+        if (successor->getTaskType()==COMPOSITE) {
+            CompositeTask* temp = dynamic_cast<CompositeTask*>(successor);
+            if (temp->isItemHere(predecessor)) temp->removeSubTask(predecessor->getId());
+        }
+    }
 
     friend class AssociationManager;
 public:

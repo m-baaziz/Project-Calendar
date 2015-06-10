@@ -519,6 +519,15 @@ moc_GUI-Architecture.cpp: /usr/include/qt5/QtWidgets/QApplication \
 		/usr/include/qt5/QtWidgets/qmenu.h \
 		/usr/include/qt5/QtWidgets/qaction.h \
 		/usr/include/qt5/QtWidgets/qactiongroup.h \
+		/usr/include/qt5/QtWidgets/QGraphicsTextItem \
+		/usr/include/qt5/QtWidgets/qgraphicsitem.h \
+		/usr/include/qt5/QtWidgets/QGraphicsRectItem \
+		/usr/include/qt5/QtGui/QPainter \
+		/usr/include/qt5/QtGui/QRegion \
+		/usr/include/qt5/QtCore/QRect \
+		/usr/include/qt5/QtGui/QPen \
+		/usr/include/qt5/QtGui/QPolygon \
+		/usr/include/qt5/QtWidgets/QTableView \
 		../ProjectCalendar/TaskManager.h \
 		../ProjectCalendar/Task.h \
 		../ProjectCalendar/Calendar.h \
@@ -530,6 +539,9 @@ moc_GUI-Architecture.cpp: /usr/include/qt5/QtWidgets/QApplication \
 		../ProjectCalendar/Singleton.h \
 		../ProjectCalendar/Association.h \
 		../ProjectCalendar/Project.h \
+		../ProjectCalendar/Programmation.h \
+		../ProjectCalendar/Event.h \
+		/usr/include/qt5/QtCore/QTime \
 		../ProjectCalendar/GUI-Architecture.h
 	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) $(INCPATH) -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../ProjectCalendar/GUI-Architecture.h -o moc_GUI-Architecture.cpp
 
@@ -810,7 +822,9 @@ Programmation.o: ../ProjectCalendar/Programmation.cpp ../ProjectCalendar/Program
 		/usr/include/qt5/QtCore/qregexp.h \
 		/usr/include/qt5/QtCore/qstringmatcher.h \
 		/usr/include/qt5/QtCore/QDebug \
-		../ProjectCalendar/Iterator.h
+		../ProjectCalendar/Iterator.h \
+		../ProjectCalendar/Association.h \
+		/usr/include/qt5/QtCore/QTime
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o Programmation.o ../ProjectCalendar/Programmation.cpp
 
 Event.o: ../ProjectCalendar/Event.cpp ../ProjectCalendar/Event.h \
@@ -1221,6 +1235,9 @@ main.o: ../ProjectCalendar/main.cpp ../ProjectCalendar/Calendar.h \
 		../ProjectCalendar/Singleton.h \
 		../ProjectCalendar/Association.h \
 		../ProjectCalendar/Project.h \
+		../ProjectCalendar/Event.h \
+		../ProjectCalendar/Programmation.h \
+		/usr/include/qt5/QtCore/QTime \
 		../ProjectCalendar/GUI-Architecture.h \
 		/usr/include/qt5/QtWidgets/QApplication \
 		/usr/include/qt5/QtWidgets/qapplication.h \
@@ -1338,7 +1355,16 @@ main.o: ../ProjectCalendar/main.cpp ../ProjectCalendar/Calendar.h \
 		/usr/include/qt5/QtWidgets/QMenu \
 		/usr/include/qt5/QtWidgets/qmenu.h \
 		/usr/include/qt5/QtWidgets/qaction.h \
-		/usr/include/qt5/QtWidgets/qactiongroup.h
+		/usr/include/qt5/QtWidgets/qactiongroup.h \
+		/usr/include/qt5/QtWidgets/QGraphicsTextItem \
+		/usr/include/qt5/QtWidgets/qgraphicsitem.h \
+		/usr/include/qt5/QtWidgets/QGraphicsRectItem \
+		/usr/include/qt5/QtGui/QPainter \
+		/usr/include/qt5/QtGui/QRegion \
+		/usr/include/qt5/QtCore/QRect \
+		/usr/include/qt5/QtGui/QPen \
+		/usr/include/qt5/QtGui/QPolygon \
+		/usr/include/qt5/QtWidgets/QTableView
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o ../ProjectCalendar/main.cpp
 
 Association.o: ../ProjectCalendar/Association.cpp ../ProjectCalendar/Association.h \
@@ -1425,7 +1451,9 @@ Association.o: ../ProjectCalendar/Association.cpp ../ProjectCalendar/Association
 		/usr/include/qt5/QtCore/qstringmatcher.h \
 		/usr/include/qt5/QtCore/QDebug \
 		../ProjectCalendar/Iterator.h \
-		../ProjectCalendar/Singleton.h
+		../ProjectCalendar/Singleton.h \
+		../ProjectCalendar/Project.h \
+		../ProjectCalendar/TaskManager.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o Association.o ../ProjectCalendar/Association.cpp
 
 TaskManager.o: ../ProjectCalendar/TaskManager.cpp ../ProjectCalendar/TaskManager.h \
@@ -1711,6 +1739,15 @@ GUI-Architecture.o: ../ProjectCalendar/GUI-Architecture.cpp ../ProjectCalendar/G
 		/usr/include/qt5/QtWidgets/qmenu.h \
 		/usr/include/qt5/QtWidgets/qaction.h \
 		/usr/include/qt5/QtWidgets/qactiongroup.h \
+		/usr/include/qt5/QtWidgets/QGraphicsTextItem \
+		/usr/include/qt5/QtWidgets/qgraphicsitem.h \
+		/usr/include/qt5/QtWidgets/QGraphicsRectItem \
+		/usr/include/qt5/QtGui/QPainter \
+		/usr/include/qt5/QtGui/QRegion \
+		/usr/include/qt5/QtCore/QRect \
+		/usr/include/qt5/QtGui/QPen \
+		/usr/include/qt5/QtGui/QPolygon \
+		/usr/include/qt5/QtWidgets/QTableView \
 		../ProjectCalendar/TaskManager.h \
 		../ProjectCalendar/Task.h \
 		../ProjectCalendar/Calendar.h \
@@ -1721,7 +1758,10 @@ GUI-Architecture.o: ../ProjectCalendar/GUI-Architecture.cpp ../ProjectCalendar/G
 		../ProjectCalendar/Iterator.h \
 		../ProjectCalendar/Singleton.h \
 		../ProjectCalendar/Association.h \
-		../ProjectCalendar/Project.h
+		../ProjectCalendar/Project.h \
+		../ProjectCalendar/Programmation.h \
+		../ProjectCalendar/Event.h \
+		/usr/include/qt5/QtCore/QTime
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o GUI-Architecture.o ../ProjectCalendar/GUI-Architecture.cpp
 
 moc_GUI-Architecture.o: moc_GUI-Architecture.cpp 

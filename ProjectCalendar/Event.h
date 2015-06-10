@@ -3,8 +3,11 @@
 #include "Singleton.h"
 #include "Iterator.h"
 
-typedef std::vector<QString> ParticipantsContainer;
+typedef QStringList ParticipantsContainer;
 typedef enum ActivityTypes {MEETING,APPOINTMENT} ActivityType;
+static QStringList activityTypeTable = {"meeting","appointment"};
+
+ActivityType getActivityType(const QString& type);
 
 class Event {
     Event(const Event& e);
@@ -82,11 +85,12 @@ protected:
         }
     }
     EventsContainer events;
-    std::vector<Event*>* globalEvents;
+    SimpleEventsContainer* globalEvents;
     EventFactory():globalEvents(EventsArray::globalEvents),Aggregator<E>(&events){}
     E* findEvent(const QString& name) {
         for (typename EventsContainer::iterator it = events.begin(); it != events.end(); ++it)
             if ((*it)->name==name) return *it;
+        return 0;
     }
 
 public:
@@ -105,6 +109,12 @@ public:
             if (*it==toDelete) {
                 delete toDelete;
                 events.erase(it);
+                for (typename SimpleEventsContainer::iterator it2 = globalEvents->begin(); it2!=globalEvents->end(); ++it2) {
+                    if (*it2==*it) {
+                        globalEvents->erase(it2);
+                        return;
+                    }
+                }
                 return;
             }
         }
@@ -179,7 +189,7 @@ class ActivityFactory : public EventFactory<Activity,ActivityFactory> {
 protected:
     ActivityFactory() {}
 public:
-    Activity& addActivity(QString& n,const QDate& d, const QTime& ti,const Duration& du, const QString& p,const ActivityType& t, const ParticipantsContainer& par);
+    Activity& addActivity(const QString& n,const QDate& d, const QTime& ti,const Duration& du, const QString& p,const ActivityType& t, const ParticipantsContainer& par);
     void achieveEvent(const QString& name) override;
 };
 
