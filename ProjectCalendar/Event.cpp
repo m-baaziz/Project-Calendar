@@ -39,7 +39,6 @@ void Event::registerParticipant(const QString &username) {
 
 Activity& ActivityFactory::addActivity(const QString &n, const QDate &d, const QTime& ti,const Duration& du, const QString &p, const ActivityType &t, const ParticipantsContainer &par) {
     if (n.size()==0 || p.size()==0) throw CalendarException("Error : Invalid parameters");
-    qDebug()<<"name : "+n;
     if (isEventHere(n)) throw CalendarException("Error : Activity "+n+" has already been added");
     if (!isTimeZoneFree(d,ti,du)) throw CalendarException("Error : Time zone not available");
     Activity* newActivity = new Activity(n,d,ti,du,p,t,par);

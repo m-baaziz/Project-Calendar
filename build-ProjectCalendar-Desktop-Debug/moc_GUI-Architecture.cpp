@@ -770,7 +770,7 @@ void CalendarTable::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _i
 }
 
 const QMetaObject CalendarTable::staticMetaObject = {
-    { &QTableView::staticMetaObject, qt_meta_stringdata_CalendarTable.data,
+    { &QTableWidget::staticMetaObject, qt_meta_stringdata_CalendarTable.data,
       qt_meta_data_CalendarTable,  qt_static_metacall, 0, 0}
 };
 
@@ -785,12 +785,12 @@ void *CalendarTable::qt_metacast(const char *_clname)
     if (!_clname) return 0;
     if (!strcmp(_clname, qt_meta_stringdata_CalendarTable.stringdata))
         return static_cast<void*>(const_cast< CalendarTable*>(this));
-    return QTableView::qt_metacast(_clname);
+    return QTableWidget::qt_metacast(_clname);
 }
 
 int CalendarTable::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 {
-    _id = QTableView::qt_metacall(_c, _id, _a);
+    _id = QTableWidget::qt_metacall(_c, _id, _a);
     if (_id < 0)
         return _id;
     return _id;

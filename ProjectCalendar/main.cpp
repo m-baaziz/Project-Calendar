@@ -82,7 +82,7 @@ int main(int argc, char *argv[]) {
         progF->scheduleTask(&prem2,"initialisation de la tache",QDate(2019,12,2),QTime(12,00),Duration(2,30),"Compy City");
         progF->scheduleTask(&prem3,"terminaison de la tache",QDate(2023,12,2),QTime(12,00),Duration(2,30),"Compy City");
         qDebug()<<progF->getSpecificEventByDateAndTime(QDate(2023,12,2),QTime(12,00))->getTask()->getId();
-
+        progF->achieveEvent("initialisation de la tache");
 
 /*    }
 catch (CalendarException e) {

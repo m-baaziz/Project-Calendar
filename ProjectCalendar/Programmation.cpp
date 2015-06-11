@@ -1,4 +1,5 @@
 #include "Programmation.h"
+#include "TaskManager.h"
 
 template<>
 Handler<ProgrammationFactory> Singleton<ProgrammationFactory>::handler = Handler<ProgrammationFactory>();
@@ -113,4 +114,18 @@ void ProgrammationFactory::achieveEvent(const QString &name) {
         if (ok) task->setCompleted();
     }
     toAchieve->setToAchieved();
+    if (task->isCompleted) {
+        CompositeTask* parent = CompositeFactory::getInstance().isTaskIncluded(task->getId());
+        TasksContainer array = parent->getSubTasksArray();
+        bool allCompleted = true;
+        Task* temp;
+        for (TasksContainer::iterator it = array.begin(); it!=array.end(); ++it) {
+            temp = *it;
+            if (!(temp->isCompleted)) {
+                allCompleted = false;
+                break;
+            }
+        }
+        if (allCompleted) parent->setCompleted();
+    }
 }

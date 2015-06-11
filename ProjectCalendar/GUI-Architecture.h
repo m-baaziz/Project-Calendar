@@ -201,7 +201,7 @@ public slots:
     void addTask() override;
 };
 
-class CalendarTable : public QTableView {
+class CalendarTable : public QTableWidget {
     Q_OBJECT
 public:
     CalendarTable(QWidget* parent);
@@ -301,7 +301,7 @@ class MainWindow : public QWidget {
 
     // in displayLayer
 
-    QTableView* calendarTable;
+    CalendarTable* calendarTable;
     QGraphicsView* treeView;
     QGraphicsScene* treeScene;
 

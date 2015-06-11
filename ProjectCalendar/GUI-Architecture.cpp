@@ -875,11 +875,10 @@ void EditAssociationConstraint::removeAssociation() {
     }
 }
 
-CalendarTable::CalendarTable(QWidget *parent) : QTableView(parent) {
-    this->setModel(MainWindow::independentTasksModel);
+CalendarTable::CalendarTable(QWidget *parent) : QTableWidget(parent) {
 
-    rowHeight(30);
-    columnWidth(30);
+    setColumnCount(7);
+    setRowCount(20);
 }
 
 EventForm::EventForm(QWidget *parent) : QWidget(parent) {

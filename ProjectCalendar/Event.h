@@ -4,8 +4,8 @@
 #include "Iterator.h"
 
 typedef QStringList ParticipantsContainer;
-typedef enum ActivityTypes {MEETING,APPOINTMENT} ActivityType;
-static QStringList activityTypeTable = {"meeting","appointment"};
+typedef enum ActivityTypes {MEETING,APPOINTMENT,BIRTHDAY} ActivityType;
+static QStringList activityTypeTable = {"meeting","appointment","birthday"};
 
 ActivityType getActivityType(const QString& type);
 
@@ -159,7 +159,7 @@ public:
         for (typename SimpleEventsContainer::iterator it = globalEvents->begin(); it!=globalEvents->end(); ++it) {
             temp = *it;
             QTime max = QTime(t.hour()+du.getHours(),t.minute()+du.getMinutes());
-            if (temp->getDate()==d && temp->getTime()>=t && temp->getTime()<max)
+            if (temp->getDate()==d && temp->getTime()>=t && temp->getTime()<=max)
                 return false;
         }
         return true;
