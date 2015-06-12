@@ -59,7 +59,7 @@ public:
     void setDeadline(const QDate& date) {deadline=date;}
 };
 
-typedef std::vector<Task*> TasksContainer;
+typedef std::list<Task*> TasksContainer;
 typedef Iterator<Task> TasksIterator;
 typedef IterationStrategy<Task> TasksIterationStrategy;
 

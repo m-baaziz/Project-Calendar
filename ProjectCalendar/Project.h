@@ -57,7 +57,7 @@ public:
     TasksContainer getRootTasks();
 };
 
-typedef std::vector<Project*> ProjectsContainer;
+typedef std::list<Project*> ProjectsContainer;
 
 class ProjectFactory : public Singleton<ProjectFactory>, public Aggregator<Project> {
     ProjectFactory(const ProjectFactory& pm);

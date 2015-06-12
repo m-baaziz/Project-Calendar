@@ -23,7 +23,7 @@
 template<class ObjectType>
 class Iterator {
 protected:
-    typedef std::vector<ObjectType*> ItemContainer;
+    typedef std::list<ObjectType*> ItemContainer;
     ItemContainer currentItem;
     Iterator(const ItemContainer& t):currentItem(t){}
     template<class ANY>
@@ -55,7 +55,7 @@ template<class ItemType>
 class Aggregator {
     Aggregator(const Aggregator& f);
     Aggregator& operator=(const Aggregator& f);
-    typedef std::vector<ItemType*> ItemsContainer;
+    typedef std::list<ItemType*> ItemsContainer;
     ItemsContainer* items;
 protected:
     Aggregator(ItemsContainer* i): items(i){}
@@ -71,7 +71,7 @@ public:
 
     template<class IteratorItemType = ItemType>
     Iterator<IteratorItemType> getIterator(const IterationStrategy<ItemType>* strategy = 0) { //here take out compositeTask parameter and override this method in taskFactory with a compositeTask parameter/ OR : make composite tasks agregators
-        std::vector<IteratorItemType*> toSend;
+        std::list<IteratorItemType*> toSend;
         IteratorItemType* temp = 0;
         for (typename ItemsContainer::iterator it = items->begin(); it!=items->end(); ++it) {
             temp = dynamic_cast<IteratorItemType*>(*it);

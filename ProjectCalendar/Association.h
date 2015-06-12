@@ -17,12 +17,7 @@ class Association {
     Association():predecessor(0),successor(0){}
     Association(Task* p, Task* s): predecessor(p),successor(s){}
     Association& operator=(const Association& a);
-    ~Association(){
-        if (successor->getTaskType()==COMPOSITE) {
-            CompositeTask* temp = dynamic_cast<CompositeTask*>(successor);
-            if (temp->isItemHere(predecessor)) temp->removeSubTask(predecessor->getId());
-        }
-    }
+    ~Association(){}
 
     friend class AssociationManager;
 public:
@@ -31,7 +26,7 @@ public:
 };
 
 typedef Iterator<Association> AssociationIterator;
-typedef std::vector<Association*> AssociationsContainer;
+typedef std::list<Association*> AssociationsContainer;
 
 class AssociationManager: public Singleton<AssociationManager>, public Aggregator<Association> {
     AssociationsContainer assos;

@@ -59,13 +59,14 @@ public:
     ActivityType getActivityType() {return type;}
 };
 
+typedef std::list<Event*> SimpleEventsContainer;
+
 class EventsArray {
-    static std::vector<Event*>* globalEvents;
+    static SimpleEventsContainer* globalEvents;
     template<class A,class B>
     friend class EventFactory;
 };
 
-typedef std::vector<Event*> SimpleEventsContainer;
 
 template<class E, class F>
 class EventFactory : public Singleton<F>, public Aggregator<E> {
@@ -74,7 +75,7 @@ class EventFactory : public Singleton<F>, public Aggregator<E> {
 
     friend class Singleton<F>;
 protected:
-    typedef std::vector<E*> EventsContainer;
+    typedef std::list<E*> EventsContainer;
     typedef IterationStrategy<Event> EventsIterationStrategy;
 
     virtual ~EventFactory(){

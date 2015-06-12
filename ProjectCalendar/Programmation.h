@@ -31,6 +31,7 @@ class ProgrammationFactory : public EventFactory<Programmation,ProgrammationFact
     friend class Handler<ProgrammationFactory>;
 protected:
     ProgrammationFactory():EventFactory(){}
+    ~ProgrammationFactory() {}
 public:
     bool isScheduled(UnitaryTask* t);
     /*!

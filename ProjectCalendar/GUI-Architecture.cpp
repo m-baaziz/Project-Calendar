@@ -7,7 +7,7 @@ QStandardItemModel* MainWindow::independentTasksModel = new QStandardItemModel()
 QStandardItemModel* MainWindow::projectsTreeModel = new QStandardItemModel();
 
 MainWindow::MainWindow(QWidget *parent): QWidget(parent) {
-    this->resize(1300,800);
+    this->resize(1400,950);
 
 
     mainLayer = new QVBoxLayout(this);
@@ -69,7 +69,7 @@ MainWindow::MainWindow(QWidget *parent): QWidget(parent) {
 
     // in displayLayer
 
-    calendarTable = new CalendarTable(this);
+    calendarTable = new Week(this);
     treeScene = new QGraphicsScene;
     treeView = new QGraphicsView(treeScene);
 
@@ -875,11 +875,6 @@ void EditAssociationConstraint::removeAssociation() {
     }
 }
 
-CalendarTable::CalendarTable(QWidget *parent) : QTableWidget(parent) {
-
-    setColumnCount(7);
-    setRowCount(20);
-}
 
 EventForm::EventForm(QWidget *parent) : QWidget(parent) {
     EventTypeSelector = new QComboBox(this);
@@ -976,6 +971,17 @@ void EventForm::addProgrammation() {
         errMessage->setText(e.getInfo());
         errMessage->show();
     }
+    catch (TasksContainer toSchedule) {
+        QString toPrint = "";
+        TasksContainer::iterator beforeLast = --(toSchedule.end()); // in order not to add ' , ' after the last task
+        for (TasksContainer::iterator it = toSchedule.begin(); it!=beforeLast; ++it) {
+            toPrint += (*it)->getId()+", ";
+        }
+        if (toSchedule.size()>0)toPrint += toSchedule.back()->getId();
+        QMessageBox* errMessage = new QMessageBox(this);
+        errMessage->setText("Error : Pleas respect precedence constraints, you need to schedule "+toPrint+" before beeing able to schedule "+task->text());
+        errMessage->show();
+    }
 }
 
 void EventForm::addElement() {
@@ -1013,3 +1019,100 @@ void EventForm::addActivity() {
         errMessage->show();
     }
 }
+
+
+
+
+Week::Week(QWidget* parent):QWidget(parent){
+
+    calendar = new QCalendarWidget(this);
+    calendar->hide();
+    week = new QTableView(this);
+    week->setMinimumWidth(800);
+    week->setMinimumHeight(700);
+    previousWeek = new QPushButton("<<<");
+    previousWeek->setMaximumWidth(200);
+    nextWeek = new QPushButton(">>>");
+    nextWeek->setMaximumWidth(400);
+    manageWeek = new ManageWeeks(QDate::currentDate());
+    manageWeek->setCalendarPopup(true);
+    manageWeek->setMinimumWidth(150);
+
+    for (unsigned int i = 0; i < 24 ; ++i){
+        int hour = i;
+        if (!(i % 2)) ListHours << QString("%0h00").arg(hour);
+        else ListHours << QString();
+    }
+
+    model = new QStandardItemModel(this);
+    model->setHorizontalHeaderLabels(ListDays);
+    model->setVerticalHeaderLabels(ListHours);
+
+    for (int day = 0; day < 7; ++day){
+        for (int halfHour = 0; halfHour < 24; ++halfHour){
+            QStandardItem *item = new QStandardItem();
+            model->setItem(halfHour, day, item);
+            model->item(halfHour, day)->setEditable(false);
+            item->setData(Qt::AlignCenter, Qt::TextAlignmentRole);
+        }
+    }
+
+
+    QHeaderView* vHeader = week->horizontalHeader();
+    vHeader->setSectionResizeMode(QHeaderView::Stretch);
+
+    week->setModel(model);
+    updateWeek();
+    Hlayout1 = new QHBoxLayout;
+    Hlayout1->addWidget(previousWeek, 0, Qt::AlignRight);
+    Hlayout1->addWidget(manageWeek,0, Qt::AlignCenter);
+    Hlayout1->addWidget(nextWeek,0, Qt::AlignLeft);
+
+    Hlayout2 = new QHBoxLayout;
+    Hlayout2->addWidget(week);
+
+    Vlayout = new QVBoxLayout;
+    Vlayout->addLayout(Hlayout1);
+    Vlayout->addLayout(Hlayout2);
+
+    this->setLayout(Vlayout);
+
+    //Connexion des widgets
+    QObject::connect(previousWeek, SIGNAL(clicked()), manageWeek, SLOT(previousWeek()));
+    QObject::connect(nextWeek, SIGNAL(clicked()), manageWeek, SLOT(nextWeek()));
+    QObject::connect(manageWeek, SIGNAL(dateChanged(QDate)),this, SLOT(updateWeek()));
+
+}
+
+void Week::updateWeek(){
+    date = manageWeek->date();
+
+      ListDays.clear();
+      ListDays<<QString("Mon %0-%1").arg(getDays(date, 1)).arg(getMonth(date,1))
+              <<QString("Tue %0-%1").arg(getDays(date, 2)).arg(getMonth(date,2))
+              <<QString("Wed %0-%1").arg(getDays(date, 3)).arg(getMonth(date,3))
+              <<QString("Thu %0-%1").arg(getDays(date, 4)).arg(getMonth(date,4))
+              <<QString("Fri %0-%1").arg(getDays(date, 5)).arg(getMonth(date,5))
+              <<QString("Sat %0-%1").arg(getDays(date, 6)).arg(getMonth(date,6))
+              <<QString("Sun %0-%1").arg(getDays(date, 7)).arg(getMonth(date,7));
+    model->setHorizontalHeaderLabels(ListDays);
+
+
+    for (int day = 0; day < 7; ++day){
+        for (int halfHour = 0; halfHour < 24; ++halfHour){
+            model->item(halfHour, day)->setText("");
+            model->item(halfHour, day)->setBackground(QBrush(QColor(Qt::white)));
+        }
+    }
+    week->clearSpans();
+
+}
+
+void ManageWeeks::previousWeek(){
+    setDate(date().addDays(-7));
+}
+
+void ManageWeeks::nextWeek(){
+    setDate(date().addDays(7));
+}
+

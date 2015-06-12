@@ -34,6 +34,8 @@
 #include <QPolygon>
 #include <math.h>
 #include <QTableView>
+#include <QCalendarWidget>
+#include <QHeaderView>
 
 #include "TaskManager.h"
 #include "Project.h"
@@ -67,6 +69,44 @@ public:
     }
 
 };
+
+
+class ManageWeeks : public QDateEdit{
+    Q_OBJECT
+public slots:
+    void nextWeek();
+    void previousWeek();
+public:
+    ManageWeeks(const QDate& date, QDateEdit* parent=0) : QDateEdit(date,parent){}
+};
+
+class Week : public QWidget{
+
+    Q_OBJECT
+
+private:
+    QDate date;
+    QStringList ListDays, ListHours;
+    QTableView* week;
+    QCalendarWidget* calendar;
+    ManageWeeks* manageWeek;
+    QStandardItemModel* model;
+    QHBoxLayout *Hlayout1, *Hlayout2;
+    QVBoxLayout* Vlayout;
+    QPushButton *nextWeek, *previousWeek;
+    QLabel *currentWeek;
+
+public:
+    Week(QWidget* parent=0);
+    int getDays(QDate& date, int j){return date.addDays(-date.dayOfWeek()+j).day();}
+    int getMonth(QDate& date, int j){return date.addDays(-date.dayOfWeek()+j).month();}
+
+public slots:
+    void updateWeek();
+
+};
+
+
 
 class MyComboBox: public QComboBox {
   Q_OBJECT
@@ -201,26 +241,6 @@ public slots:
     void addTask() override;
 };
 
-class CalendarTable : public QTableWidget {
-    Q_OBJECT
-public:
-    CalendarTable(QWidget* parent);
-public slots:
-
-};
-
-//class EventComboBox : public QComboBox {
-//    Q_OBJECT
-//public:
-//    EventComboBox(QWidget* parent=0):QComboBox(parent){
-//    this->setParent(parent);
-//    connect(this , SIGNAL(currentIndexChanged(int)),this,SLOT(handleSelectionChanged(int)));
-//    };
-//    ~ MyComboBox(){}
-
-//public slots:
-//      void handleSelectionChanged(int index);
-//};
 
 
 class EventForm : public QWidget {
@@ -301,7 +321,7 @@ class MainWindow : public QWidget {
 
     // in displayLayer
 
-    CalendarTable* calendarTable;
+    Week* calendarTable;
     QGraphicsView* treeView;
     QGraphicsScene* treeScene;
 
@@ -400,6 +420,8 @@ public slots:
     void addAssociation();
     void removeAssociation();
 };
+
+
 
 
 #endif // GUIARCHITECTURE_H

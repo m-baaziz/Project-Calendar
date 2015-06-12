@@ -21,7 +21,8 @@ Programmation& ProgrammationFactory::scheduleTask(UnitaryTask *t, const QString 
     if (d<(t->getDisponibility())) throw CalendarException("Error : a Task can't be scheduled before its disponibility date");
     if (QDate(d.year(),d.month(),d.day()+(ti.hour()+du.getDurationInHours())/24)>t->getDeadline()) throw CalendarException("Error : a Task can't be scheduled after its deadline");
     if (du.getDurationInHours()>12) throw CalendarException("Error : a single programmation can't last for more than 12 hours");
-    if (!(getTaskToSchedule(t).empty())) throw CalendarException("Error : Pleas respect precedence constraints, you need to schedule "+t->getId()+"'s predecessors before beeing able to schedule it");
+    TasksContainer toSchedule = getTaskToSchedule(t);
+    if (!(toSchedule.empty())) throw toSchedule;//throw CalendarException("Error : Pleas respect precedence constraints, you need to schedule "+t->getId()+"'s predecessors before beeing able to schedule it");
     if (!isTimeZoneFree(d,ti,du)) throw CalendarException("Error : Time zone not available");
     if (t->isPreemptive()) {
         PreemptiveTask* target = dynamic_cast<PreemptiveTask*>(t);

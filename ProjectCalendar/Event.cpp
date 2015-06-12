@@ -4,7 +4,7 @@
 template<>
 Handler<ActivityFactory> Singleton<ActivityFactory>::handler = Handler<ActivityFactory>();
 
-std::vector<Event*>* EventsArray::globalEvents = new std::vector<Event*>();
+SimpleEventsContainer* EventsArray::globalEvents = new SimpleEventsContainer();
 
 
 ActivityType getActivityType(const QString &type) {

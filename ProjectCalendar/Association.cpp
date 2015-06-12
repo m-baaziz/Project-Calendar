@@ -33,8 +33,9 @@ bool AssociationManager::isTaskXFollowedByY(Task* X,Task* Y) {
 void AssociationManager::removeTaskAssociationLinks(Task* t) {
     for (AssociationsContainer::iterator it = assos.begin(); it!=assos.end();) {
         if ((*it)->getPredecessor()==t || (*it)->getSuccessor()==t) {
-            delete *it;
-            assos.erase(it);
+            Association* toDelete = *it;
+            it=assos.erase(it);
+            delete toDelete;
         }
         else ++it;
     }

@@ -824,7 +824,9 @@ Programmation.o: ../ProjectCalendar/Programmation.cpp ../ProjectCalendar/Program
 		/usr/include/qt5/QtCore/QDebug \
 		../ProjectCalendar/Iterator.h \
 		../ProjectCalendar/Association.h \
-		/usr/include/qt5/QtCore/QTime
+		/usr/include/qt5/QtCore/QTime \
+		../ProjectCalendar/TaskManager.h \
+		../ProjectCalendar/Project.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o Programmation.o ../ProjectCalendar/Programmation.cpp
 
 Event.o: ../ProjectCalendar/Event.cpp ../ProjectCalendar/Event.h \
