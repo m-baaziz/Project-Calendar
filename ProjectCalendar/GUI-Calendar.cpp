@@ -28,10 +28,10 @@ Week::Week(QWidget* parent):QWidget(parent){
     model->setVerticalHeaderLabels(ListHours);
 
     for (int day = 0; day < 7; ++day){
-        for (int halfHour = 0; halfHour < 24; ++halfHour){
+        for (int hourVar = 0; hourVar < 24; ++hourVar){
             QStandardItem *item = new QStandardItem();
-            model->setItem(halfHour, day, item);
-            model->item(halfHour, day)->setEditable(false);
+            model->setItem(hourVar, day, item);
+            model->item(hourVar, day)->setEditable(false);
             item->setData(Qt::AlignCenter, Qt::TextAlignmentRole);
         }
     }
@@ -107,12 +107,12 @@ void Week::updateWeek(){
     ProgrammationFactory* pf = &(ProgrammationFactory::getInstance());
 
     for (int day = 0; day < 7; ++day){
-        for (int halfHour = 0; halfHour < 24; ++halfHour){
-            model->item(halfHour, day)->setText(EventsinTimeZoneToString(date.addDays(day-date.dayOfWeek()+1),QTime(halfHour,0),Duration(1,0),&eventsTab));
+        for (int hourVar = 0; hourVar < 24; ++hourVar){
+            model->item(hourVar, day)->setText(EventsinTimeZoneToString(date.addDays(day-date.dayOfWeek()+1),QTime(hourVar,0),Duration(1,0),&eventsTab));
             data = QVariant(QStringList(eventsTab));
             if(!eventsTab.empty()) {
                 allAchieved = true;
-                model->item(halfHour, day)->setData(QVariant(data),Qt::UserRole+2);
+                model->item(hourVar, day)->setData(QVariant(data),Qt::UserRole+2);
                 for (QStringList::iterator it=eventsTab.begin(); it!=eventsTab.end(); ++it) {
                     if (!(pf->getEvent(*it)->isAchieved())) {
                         allAchieved = false;
@@ -121,12 +121,12 @@ void Week::updateWeek(){
                 }
             }
             if (allAchieved) {
-                model->item(halfHour, day)->setBackground(QBrush(QColor(0,255,103)));
+                model->item(hourVar, day)->setBackground(QBrush(QColor(0,255,103)));
                 allAchieved = false;
             }
             else {
-                if (!(halfHour%2)) model->item(halfHour, day)->setBackground(QBrush(QColor(Qt::white)));
-                else model->item(halfHour, day)->setBackground(QBrush(QColor(204,255,255)));
+                if (!(hourVar%2)) model->item(hourVar, day)->setBackground(QBrush(QColor(Qt::white)));
+                else model->item(hourVar, day)->setBackground(QBrush(QColor(204,255,255)));
             }
             eventsTab.clear();
         }
