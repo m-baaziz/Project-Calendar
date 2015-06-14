@@ -37,12 +37,14 @@ protected:
     bool isTaskAdded(Task* t); // also checks with composition ...
 
     friend class ProjectFactory;
+    friend class ProgrammationFactory;
 public:
     QString getId() const {return identifier;}
     QString getTitle() const {return title;}
     Duration getDuration() const {return duration;}
     QDate getDisponibility() const {return disponibility;}
     QDate getDeadline() const {return deadline;}
+    bool isProjectCompleted() const {return isCompleted;}
 
     void setId(const QString& id) {identifier=id;}
     void setTitle(const QString& t) {title=t;}
@@ -80,9 +82,9 @@ protected:
 
     friend class Singleton<ProjectFactory>;
     friend class Handler<ProjectFactory>;
+    friend void loadAll(const QString &fileName);
 public:
-    void load(const QString& f);
-    void save(const QString& f);
+    void save(QXmlStreamWriter& stream);
     Project* getTaskProject(Task* t);
     bool isProjectHere(const QString& id);
     bool isProjectHere(const Project* const p);

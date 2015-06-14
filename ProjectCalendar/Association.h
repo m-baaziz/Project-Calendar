@@ -34,21 +34,25 @@ class AssociationManager: public Singleton<AssociationManager>, public Aggregato
     AssociationManager():Aggregator<Association>(&assos){}
     AssociationManager(const AssociationManager& a);
     AssociationManager& operator=(const AssociationManager& a);
-    ~AssociationManager(){}
+    virtual ~AssociationManager();
     void fillQueue(std::queue<Task*>& q, TasksContainer tc);
-    bool isTaskXFollowedByY(Task* X,Task* Y);
     void removeTaskAssociationLinks(Task* t);
 
     friend class Singleton<AssociationManager>;
     friend class Handler<AssociationManager>;
     template<class anytask,class anyfactory>
     friend class TaskFactory; // friendship to allow taskFactory to call removeTaskAssociationLinks when removing a task.
+    friend void loadAll(const QString& fileName);
+
 
 public:
+    void save(QXmlStreamWriter& stream);
+
     Association& addAssociation(Task* p, Task* s);  // many verifications to do
     void removeAssociation(Task* p, Task* s);
     TasksContainer getTaskPredecessors(Task* t);
     TasksContainer getTaskSuccessors(Task* t);
+    bool isTaskXFollowedByY(Task* X,Task* Y);
 
     class AssociationRootTasksIterationStrategy : public TasksIterationStrategy {
         bool test(Task *tested) const override {

@@ -5,7 +5,6 @@
 template<>
 Handler<ProjectFactory> Singleton<ProjectFactory>::handler = Handler<ProjectFactory>();
 
-
 bool Project::isTaskAdded(Task *t) {
     for (typename TasksContainer::iterator it = tasks.begin(); it != tasks.end(); ++it) {
         if (*it == t || ((*it)->getTaskType()==COMPOSITE && dynamic_cast<CompositeTask*>(*it)->isSubTaskHere(t->getId()))) return true;
@@ -88,6 +87,29 @@ TasksContainer Project::getRootTasks() {
 }
 
 ////////////////////////////////////////////////////////////////////
+
+void ProjectFactory::save(QXmlStreamWriter &stream) {
+    stream.writeStartElement("Projects");
+    Project* proj;
+    for (ProjectsContainer::iterator it=projects.begin(); it!=projects.end(); ++it) {
+        proj = *it;
+        stream.writeStartElement("Project");
+        stream.writeTextElement("identifier",proj->getId());
+        stream.writeTextElement("title",proj->getTitle());
+        stream.writeTextElement("duration",proj->getDuration().toString());
+        stream.writeTextElement("disponibility",proj->getDisponibility().toString());
+        stream.writeTextElement("deadline",proj->getDeadline().toString());
+        stream.writeTextElement("isCompleted",(proj->isProjectCompleted())?"true":"false");
+            stream.writeStartElement("Tasks");
+            for (Iterator<Task> it2=proj->getIterator(); !it2.isDone(); it2.next()) {
+                stream.writeTextElement("identifier",it2.current().getId());
+            }
+            stream.writeEndElement();
+        stream.writeEndElement();
+    }
+    stream.writeEndElement();
+}
+
 
 bool ProjectFactory::isTaskavalaible(Task* t) {
     for (ProjectsContainer::iterator it = projects.begin(); it!=projects.end(); ++it) {

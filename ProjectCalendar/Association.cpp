@@ -6,11 +6,17 @@
 template<>
 Handler<AssociationManager> Singleton<AssociationManager>::handler = Handler<AssociationManager>();
 
-// ASSOCIATION
 
-
-
-// ASSOCIATION MANAGER
+void AssociationManager::save(QXmlStreamWriter& stream) {
+    stream.writeStartElement("Associations");
+    for (AssociationsContainer::iterator it=assos.begin(); it!=assos.end(); ++it) {
+        stream.writeStartElement("Association");
+        stream.writeTextElement("predecessor",(*it)->getPredecessor()->getId());
+        stream.writeTextElement("successor",(*it)->getSuccessor()->getId());
+        stream.writeEndElement();
+    }
+    stream.writeEndElement();
+}
 
 void AssociationManager::fillQueue(std::queue<Task*>& q, TasksContainer tc) {
     for (TasksContainer::iterator it = tc.begin(); it!=tc.end(); ++it)
@@ -86,3 +92,10 @@ TasksContainer AssociationManager::getTaskSuccessors(Task* t) {
     return toSend;
 }
 
+AssociationManager::~AssociationManager() {
+    while (!(assos.empty())) {
+        Association* toDelete = assos.back();
+        assos.pop_back();
+        delete toDelete;
+    }
+}

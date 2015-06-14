@@ -11,10 +11,23 @@ MainWindow::MainWindow(QWidget *parent): QWidget(parent) {
 
 
     mainLayer = new QVBoxLayout(this);
+    topMenuLayer = new QHBoxLayout(this);
     topLayer = new QHBoxLayout(this);
     workSpaceLayer = new QHBoxLayout(this);
     itemsMenuLayer = new QVBoxLayout(this);
     displayLayer = new QVBoxLayout(this);
+
+
+    // in top menu layer
+    QMenu* tempTopMenu;
+    topMenu = new QMenuBar(this);
+    tempTopMenu = topMenu->addMenu("File");
+    tempTopMenu->addAction("Export to XML");
+    tempTopMenu->addAction("Import XML");
+
+    QObject::connect(tempTopMenu,SIGNAL(triggered(QAction*)),this,SLOT(topMenuTreatment(QAction*)));
+
+    topMenuLayer->addWidget(topMenu);
 
     // in topLayer
 
@@ -88,7 +101,7 @@ MainWindow::MainWindow(QWidget *parent): QWidget(parent) {
     //////////////////////////////////////
 
 
-
+    mainLayer->addLayout(topMenuLayer);
     mainLayer->addLayout(topLayer);
     workSpaceLayer->addLayout(itemsMenuLayer,1);
     workSpaceLayer->addLayout(displayLayer,4);
@@ -97,6 +110,44 @@ MainWindow::MainWindow(QWidget *parent): QWidget(parent) {
 
 
     setLayout(mainLayer);
+}
+
+void MainWindow::topMenuTreatment(QAction *action) {
+    if (action && action->text()=="Export to XML") {
+        exportToXml();
+    }
+    if (action && action->text()=="Import XML") {
+        importXml();
+    }
+}
+
+void MainWindow::exportToXml() {
+    QString fileName = QFileDialog::getSaveFileName();
+    try {
+        saveAll(fileName);
+    }
+    catch (CalendarException e){
+        QMessageBox* error = new QMessageBox(this);
+        error->setText(e.getInfo());
+        error->show();
+    }
+}
+
+void MainWindow::importXml() {
+    QString fileName = QFileDialog::getOpenFileName();
+    try {
+        loadAll(fileName);
+    }
+    catch (CalendarException e){
+        QMessageBox* error = new QMessageBox(this);
+        error->setText(e.getInfo());
+        error->show();
+    }
+    refreshTasksModel();
+    refreshIndependentTasksModel();
+    refreshProjectsModel();
+    refreshProjectsTreeModel();
+    refreshCalendar();
 }
 
 void MainWindow::showCalendar() {
@@ -181,7 +232,11 @@ void MainWindow::drawTreeHelper(const unsigned int Y,const unsigned int X, std::
 
 void MainWindow::drawProjectTree(QModelIndex projectIndex) {
     std::vector<ProjectTreeNode> V;
-    treeScene->addSimpleText(projectIndex.data().toString())->setPos(500,40);
+    Project& proj = ProjectFactory::getInstance().getProject(projectIndex.data().toString());
+    if (proj.isProjectCompleted())
+        treeScene->addSimpleText(proj.getId()+" (completed)")->setPos(500,40);
+    else
+        treeScene->addSimpleText(proj.getId())->setPos(500,40);
     if (projectsTreeModel->rowCount(projectIndex) != 0) {
         drawTreeHelper(40,500,V,projectIndex,1000/projectsTreeModel->rowCount(projectIndex));
         unsigned int maxY = 0;  // the maximum y coordinate, helps us to place the last "end" node.

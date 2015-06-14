@@ -16,7 +16,8 @@ SOURCES += \
     GUI-Project.cpp \
     GUI-Task.cpp \
     GUI-Association.cpp \
-    GUI-Event.cpp
+    GUI-Event.cpp \
+    save.cpp
 
 HEADERS += \
     Calendar.h \
@@ -33,4 +34,5 @@ HEADERS += \
     GUI-Project.h \
     GUI-Task.h \
     GUI-Association.h \
-    GUI-Event.h
+    GUI-Event.h \
+    save.h

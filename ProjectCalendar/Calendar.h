@@ -1,6 +1,8 @@
 #ifndef CALENDAR_H
 #define CALENDAR_H
-#include <iostream>
+#include <iostream>"
+#include <stack>
+#include <map>
 #include <QString>
 #include <QDate>
 #include <QFile>
@@ -59,12 +61,12 @@ public:
     Duration(const unsigned int h, const unsigned int &m): minutes(h*60+m) {
         if (m>59) throw CalendarException("Error : Invalid minutes values");
     }
-    void SetDuree(const unsigned int& m) {
+    void SetDuration(const unsigned int& m) {
         if (m>59) throw CalendarException("Error : Invalid duration values");
         minutes = m;
     }
 
-    void SetDuree(const unsigned int& h, const unsigned int& m) {
+    void SetDuration(const unsigned int& h, const unsigned int& m) {
         if (m>59) throw CalendarException("Error : Invalid duration values");
         minutes = h*60+m;
     }
@@ -113,6 +115,14 @@ public:
         QString h = (H<10)?"0"+QString::number(H):""+QString::number(H);
         QString m = (M<10)?"0"+QString::number(M):""+QString::number(M);
         return h+" H "+m;
+    }
+    Duration& fromString(const QString& d) {
+        QStringList temp = d.split(" H ");
+        if (temp[0]<0 || temp[1]<0) throw CalendarException("Error : wrong duration values given to Duration::fromString()");
+        unsigned int H = temp[0].toInt();
+        unsigned int M = temp[1].toInt();
+        SetDuration(H,M);
+        return *this;
     }
 };
 

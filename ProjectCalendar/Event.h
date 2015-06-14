@@ -40,6 +40,8 @@ public:
 
     void setName(const QString& n) {name = n;}
     void setPlace(const QString& p) {place = p;}
+    void setDate(const QDate& da) {date = da;}
+    void setDuration(const Duration& du) {duration = du;}
     void setParticipants(const ParticipantsContainer& pc) {participants=pc;}
     bool isParticipantHere(const QString& username);
     void registerParticipant(const QString& username);
@@ -61,6 +63,23 @@ class Activity : public Event {
 public:
     EventType getEventType() const override {return ACTIVITY;}
     ActivityType getActivityType() const {return type;}
+};
+
+class Programmation : public Event {
+
+    UnitaryTask* task;
+
+    Programmation(const QString& n,const QDate& d, const QTime& ti, const QString& p,const Duration& du,UnitaryTask* t,const ParticipantsContainer& par = ParticipantsContainer()) :
+        Event(n,d,ti,du,p,par),task(t) {}
+    Programmation(const Programmation& p);
+    Programmation& operator=(const Programmation& p);
+    virtual ~Programmation(){}
+
+    friend class ProgrammationFactory;
+public:
+    UnitaryTask* getTask() {return task;}
+    const UnitaryTask* getTask() const {return task;}
+    EventType getEventType() const override {return PROGRAMMATION;}
 };
 
 typedef std::list<Event*> EventsContainer;
@@ -89,15 +108,49 @@ protected:
         }
     }
     EventsContainer* events;
-    EventFactory():events(EventsArray::globalEvents),Aggregator<Event>(EventsArray::globalEvents){}
+    QFile file;
+    EventFactory():file(""),events(EventsArray::globalEvents),Aggregator<Event>(EventsArray::globalEvents){}
     Event* findEvent(const QString& name) {
         for (typename EventsContainer::iterator it = events->begin(); it != events->end(); ++it)
             if ((*it)->name==name) return *it;
         return 0;
     }
 
+    void commonSave(QXmlStreamWriter& stream, const Event& e) {
+        stream.writeTextElement("name",e.getName());
+        stream.writeTextElement("date",e.getDate().toString());
+        stream.writeTextElement("time",e.getTime().toString());
+        stream.writeTextElement("duration",e.getDuration().toString());
+        stream.writeTextElement("place",e.getPlace());
+        stream.writeTextElement("participants",e.getParticipants().join(','));
+        stream.writeTextElement("achieved",(e.isAchieved())?"true":"false");
+    }
+
+    friend void loadAll(const QString& fileName);
+
 public:
     typedef std::list<E*> SpecificEventsContainer;
+
+    void save(QXmlStreamWriter& stream) {
+        stream.writeStartElement("Events");
+            stream.writeStartElement("Activities");
+            for (Iterator<Activity> it=getIterator<Activity>(); !it.isDone(); it.next()) {
+                stream.writeStartElement("Activity");
+                commonSave(stream,it.current());
+                stream.writeTextElement("type",activityTypeTable[it.current().getActivityType()]);
+                stream.writeEndElement();
+            }
+            stream.writeEndElement();
+            stream.writeStartElement("Programmations");
+            for (Iterator<Programmation> it=getIterator<Programmation>(); !it.isDone(); it.next()) {
+                stream.writeStartElement("Programmation");
+                commonSave(stream,it.current());
+                stream.writeTextElement("task",it.current().getTask()->getId());
+                stream.writeEndElement();
+            }
+            stream.writeEndElement();
+        stream.writeEndElement();
+    }
 
     bool isEventHere(const QString& name) {
         return findEvent(name)!=0;

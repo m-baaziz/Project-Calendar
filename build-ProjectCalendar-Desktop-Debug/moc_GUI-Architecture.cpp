@@ -108,8 +108,8 @@ int MyComboBox::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     return _id;
 }
 struct qt_meta_stringdata_MainWindow_t {
-    QByteArrayData data[13];
-    char stringdata[235];
+    QByteArrayData data[16];
+    char stringdata[268];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -130,7 +130,10 @@ QT_MOC_LITERAL(8, 151, 22),
 QT_MOC_LITERAL(9, 174, 22),
 QT_MOC_LITERAL(10, 197, 3),
 QT_MOC_LITERAL(11, 201, 19),
-QT_MOC_LITERAL(12, 221, 12)
+QT_MOC_LITERAL(12, 221, 12),
+QT_MOC_LITERAL(13, 234, 16),
+QT_MOC_LITERAL(14, 251, 8),
+QT_MOC_LITERAL(15, 260, 6)
     },
     "MainWindow\0refreshTasksModel\0\0"
     "refreshProjectsModel\0refreshIndependentTasksModel\0"
@@ -138,6 +141,7 @@ QT_MOC_LITERAL(12, 221, 12)
     "showIndependentTasksInMenu\0"
     "showProjectsTreeInMenu\0showProjectContextMenu\0"
     "pos\0showTaskContextMenu\0showCalendar\0"
+    "topMenuTreatment\0QAction*\0action\0"
 };
 #undef QT_MOC_LITERAL
 
@@ -147,7 +151,7 @@ static const uint qt_meta_data_MainWindow[] = {
        7,       // revision
        0,       // classname
        0,    0, // classinfo
-      10,   14, // methods
+      11,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -155,16 +159,17 @@ static const uint qt_meta_data_MainWindow[] = {
        0,       // signalCount
 
  // slots: name, argc, parameters, tag, flags
-       1,    0,   64,    2, 0x0a,
-       3,    0,   65,    2, 0x0a,
-       4,    0,   66,    2, 0x0a,
-       5,    0,   67,    2, 0x0a,
-       6,    0,   68,    2, 0x0a,
-       7,    0,   69,    2, 0x0a,
-       8,    0,   70,    2, 0x0a,
-       9,    1,   71,    2, 0x0a,
-      11,    1,   74,    2, 0x0a,
-      12,    0,   77,    2, 0x0a,
+       1,    0,   69,    2, 0x0a,
+       3,    0,   70,    2, 0x0a,
+       4,    0,   71,    2, 0x0a,
+       5,    0,   72,    2, 0x0a,
+       6,    0,   73,    2, 0x0a,
+       7,    0,   74,    2, 0x0a,
+       8,    0,   75,    2, 0x0a,
+       9,    1,   76,    2, 0x0a,
+      11,    1,   79,    2, 0x0a,
+      12,    0,   82,    2, 0x0a,
+      13,    1,   83,    2, 0x0a,
 
  // slots: parameters
     QMetaType::Void,
@@ -177,6 +182,7 @@ static const uint qt_meta_data_MainWindow[] = {
     QMetaType::Void, QMetaType::QPoint,   10,
     QMetaType::Void, QMetaType::QPoint,   10,
     QMetaType::Void,
+    QMetaType::Void, 0x80000000 | 14,   15,
 
        0        // eod
 };
@@ -196,7 +202,19 @@ void MainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
         case 7: _t->showProjectContextMenu((*reinterpret_cast< const QPoint(*)>(_a[1]))); break;
         case 8: _t->showTaskContextMenu((*reinterpret_cast< const QPoint(*)>(_a[1]))); break;
         case 9: _t->showCalendar(); break;
+        case 10: _t->topMenuTreatment((*reinterpret_cast< QAction*(*)>(_a[1]))); break;
         default: ;
+        }
+    } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
+        switch (_id) {
+        default: *reinterpret_cast<int*>(_a[0]) = -1; break;
+        case 10:
+            switch (*reinterpret_cast<int*>(_a[1])) {
+            default: *reinterpret_cast<int*>(_a[0]) = -1; break;
+            case 0:
+                *reinterpret_cast<int*>(_a[0]) = qRegisterMetaType< QAction* >(); break;
+            }
+            break;
         }
     }
 }
@@ -226,13 +244,13 @@ int MainWindow::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 10)
+        if (_id < 11)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 10;
+        _id -= 11;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 10)
-            *reinterpret_cast<int*>(_a[0]) = -1;
-        _id -= 10;
+        if (_id < 11)
+            qt_static_metacall(this, _c, _id, _a);
+        _id -= 11;
     }
     return _id;
 }

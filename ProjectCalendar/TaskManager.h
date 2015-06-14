@@ -23,22 +23,23 @@ template<class T, class F>
 class TaskFactory: public Singleton<F>, public Aggregator<Task> {
     TaskFactory(const TaskFactory& tf);
     TaskFactory& operator=(const TaskFactory& tf);
-    //TasksArray* tasksArray;
 
 protected:
+    TasksContainer* tasks;
 
-    TaskFactory():file(""),tasks(TasksArray::tasks),Aggregator<Task>(TasksArray::tasks){TasksArray::nbFactories ++;}
+    TaskFactory():tasks(TasksArray::tasks),Aggregator<Task>(TasksArray::tasks){TasksArray::nbFactories ++;}
+
+    void removeAllTasks() {
+        while(!(tasks->empty())) removeTask(tasks->front());
+        tasks->clear();
+    }
+
     virtual ~TaskFactory() {
-        if (file!="") this->save(file);
         TasksArray::nbFactories --;  // reminder : TasksArray::nbFactories is a static variable
         if (TasksArray::nbFactories==0) {
-            while(!(tasks->empty())) removeTask(tasks->front());
-            tasks->clear();
+            removeAllTasks();
         }
-        file="";
     }
-    QString file;
-    TasksContainer* tasks;
 
     void addItem(Task* t) {
         tasks->push_back(t);
@@ -81,6 +82,17 @@ protected:
         }
     }
 
+
+    void commonSave(QXmlStreamWriter& stream, const Task& t) {
+        stream.writeTextElement("identifier",t.getId());
+        stream.writeTextElement("title",t.getTitle());
+        stream.writeTextElement("duration",t.getDuration().toString());
+        stream.writeTextElement("disponibility",t.getDisponibility().toString());
+        stream.writeTextElement("deadline",t.getDeadline().toString());
+        stream.writeTextElement("isCompleted",(t.isTaskCompleted())?"true":"false");
+    }
+
+    friend void loadAll(const QString &fileName);
     friend class Singleton<F>;  //every Handler<Fa> is a friend of TaskFactory
 
 public:
@@ -124,32 +136,31 @@ public:
 
 
     bool isTaskHere(const QString& id) const {return findTask(id) != 0;}
-    void load(const QString& f);
 
-    void save(const QString& f) {
-        /*file = f;
-        QFile newfile(file);
-        if (!newfile.open(QIODevice::WriteOnly | QIODevice::Text))
-            throw CalendarException("Error : Can't open the file "+file+" pleas make sure that this file is not open");
-        QXmlStreamWriter stream(&newfile);
-        stream.setAutoFormatting(true);
-        stream.writeStartDocument();
+    void save(QXmlStreamWriter& stream) {
         stream.writeStartElement("Tasks");
+            stream.writeStartElement("Unitary");
+            for (Iterator<UnitaryTask> it=getIterator<UnitaryTask>(); !it.isDone(); it.next()) {
+                stream.writeStartElement("Task");
+                commonSave(stream,it.current());
+                stream.writeTextElement("preemptive",(it.current().isPreemptive())?"true":"false");
+                stream.writeEndElement();
+            }
+            stream.writeEndElement();
             stream.writeStartElement("Composite");
             for (Iterator<CompositeTask> it=getIterator<CompositeTask>(); !it.isDone(); it.next()) {
                 stream.writeStartElement("Task");
-                stream.writeTextElement("identifier",);
-                stream.writeTextElement("title",);
-                stream.writeTextElement("duration",);
-                stream.writeTextElement("disponibility",);
-                stream.writeTextElement("deadline",);
-                stream.writeTextElement("isCompleted",);
+                commonSave(stream,it.current());
+                    stream.writeStartElement("subtasks");
+                    for (Iterator<Task> it2=it.current().getIterator(); !it2.isDone(); it2.next()) {
+                        stream.writeTextElement("identifier",it2.current().getId());
+                    }
+                    stream.writeEndElement();
                 stream.writeEndElement();
             }
             stream.writeEndElement();
         stream.writeEndElement();
-        stream.writeEndDocument();
-        newfile.close();*/
+
     }
 
     void removeTask(Task* t) {

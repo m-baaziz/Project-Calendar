@@ -5,27 +5,6 @@
 #include "Association.h"
 #include "QTime"
 
-class Programmation : public Event {
-
-    UnitaryTask* task;
-
-    Programmation(const QString& n,const QDate& d, const QTime& ti, const QString& p,const Duration& du,UnitaryTask* t,const ParticipantsContainer& par = ParticipantsContainer()) :
-        Event(n,d,ti,du,p,par),task(t) {}
-    Programmation(const Programmation& p);
-    Programmation& operator=(const Programmation& p);
-    virtual ~Programmation(){}
-
-    friend class ProgrammationFactory;
-public:
-    UnitaryTask* getTask() {return task;}
-    const UnitaryTask* getTask() const {return task;}
-    EventType getEventType() const override {return PROGRAMMATION;}
-
-    void setDate(const QDate& da) {date = da;}
-    void setDuration(const Duration& du) {duration = du;}
-};
-
-
 class ProgrammationFactory : public EventFactory<Programmation,ProgrammationFactory> {
     ProgrammationFactory(const ProgrammationFactory& pf);
     ProgrammationFactory& operator=(const ProgrammationFactory& pf);

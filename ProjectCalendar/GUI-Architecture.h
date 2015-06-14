@@ -36,6 +36,8 @@
 #include <QTableView>
 #include <QCalendarWidget>
 #include <QHeaderView>
+#include <QMenuBar>
+#include <QAction>
 
 #include "TaskManager.h"
 #include "Project.h"
@@ -46,6 +48,7 @@
 #include "GUI-Calendar.h"
 #include "GUI-Event.h"
 #include "GUI-Project.h"
+#include "save.h"
 
 
 class MyComboBox: public QComboBox {
@@ -66,11 +69,16 @@ class MainWindow : public QWidget {
     Q_OBJECT
 
     QVBoxLayout* mainLayer;
+    QHBoxLayout* topMenuLayer;
     QHBoxLayout* topLayer;
     QHBoxLayout* workSpaceLayer;
     QVBoxLayout* itemsMenuLayer;
     QVBoxLayout* displayLayer;
     QHBoxLayout* eventLayer;
+
+    // top menu LAyer
+
+    QMenuBar* topMenu;
 
     // in topLayer
 
@@ -128,6 +136,8 @@ public:
     static QStandardItemModel* projectsTreeModel;
 
     void refreshCalendar();
+    void exportToXml();
+    void importXml();
 
 public slots:
     void refreshTasksModel();
@@ -141,6 +151,7 @@ public slots:
     void showTaskContextMenu(const QPoint& pos);
 
     void showCalendar();
+    void topMenuTreatment(QAction* action);
 };
 
 
