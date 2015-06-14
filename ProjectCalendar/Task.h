@@ -51,6 +51,7 @@ public:
     QDate getDisponibility() const {return disponibility;}
     QDate getDeadline() const {return deadline;}
     virtual enum TaskType getTaskType() const =0;
+    bool isTaskCompleted() const {return isCompleted;}
 
     void setId(const QString& id) {identifier=id;}
     void setTitle(const QString& t) {title=t;}

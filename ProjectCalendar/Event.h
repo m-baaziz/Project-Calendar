@@ -6,6 +6,7 @@
 typedef QStringList ParticipantsContainer;
 typedef enum ActivityTypes {MEETING,APPOINTMENT,BIRTHDAY} ActivityType;
 static QStringList activityTypeTable = {"meeting","appointment","birthday"};
+typedef enum EventTypes {ACTIVITY,PROGRAMMATION} EventType;
 
 ActivityType getActivityType(const QString& type);
 
@@ -19,6 +20,7 @@ protected:
     Duration duration;
     QString place;
     ParticipantsContainer participants;
+    EventType eventType;
     bool achieved;
 
     Event(const QString& n, const QDate& d, const QTime& t, const Duration& du, const QString& p, const ParticipantsContainer& par = ParticipantsContainer()) :
@@ -27,13 +29,14 @@ protected:
 
     void setToAchieved() {achieved = true;}
 public:
-    QString getName() {return name;}
-    QString getPlace() {return place;}
-    QDate getDate() {return date;}
-    QTime getTime() {return time;}
-    Duration getDuration() {return duration;}
-    ParticipantsContainer getParticipants() {return participants;}
-    bool isAchieved() {return achieved;}
+    QString getName() const {return name;}
+    QString getPlace() const {return place;}
+    QDate getDate() const {return date;}
+    QTime getTime() const {return time;}
+    Duration getDuration() const {return duration;}
+    ParticipantsContainer getParticipants() const {return participants;}
+    virtual EventType getEventType() const = 0;
+    bool isAchieved() const {return achieved;}
 
     void setName(const QString& n) {name = n;}
     void setPlace(const QString& p) {place = p;}
@@ -56,66 +59,67 @@ class Activity : public Event {
     Activity& operator=(const Activity& a);
     ~Activity(){}
 public:
-    ActivityType getActivityType() {return type;}
+    EventType getEventType() const override {return ACTIVITY;}
+    ActivityType getActivityType() const {return type;}
 };
 
-typedef std::list<Event*> SimpleEventsContainer;
+typedef std::list<Event*> EventsContainer;
 
 class EventsArray {
-    static SimpleEventsContainer* globalEvents;
+    static EventsContainer* globalEvents;
     template<class A,class B>
     friend class EventFactory;
 };
 
 
 template<class E, class F>
-class EventFactory : public Singleton<F>, public Aggregator<E> {
+class EventFactory : public Singleton<F>, public Aggregator<Event> {
     EventFactory(const EventFactory& ef);
     EventFactory& operator=(const EventFactory& ef);
 
     friend class Singleton<F>;
 protected:
-    typedef std::list<E*> EventsContainer;
     typedef IterationStrategy<Event> EventsIterationStrategy;
 
     virtual ~EventFactory(){
-        while (!(events.empty())) {
-            Event* toDelete = events.back();
-            events.pop_back();
+        while (!(events->empty())) {
+            Event* toDelete = events->back();
+            events->pop_back();
             delete toDelete;
         }
     }
-    EventsContainer events;
-    SimpleEventsContainer* globalEvents;
-    EventFactory():globalEvents(EventsArray::globalEvents),Aggregator<E>(&events){}
-    E* findEvent(const QString& name) {
-        for (typename EventsContainer::iterator it = events.begin(); it != events.end(); ++it)
+    EventsContainer* events;
+    EventFactory():events(EventsArray::globalEvents),Aggregator<Event>(EventsArray::globalEvents){}
+    Event* findEvent(const QString& name) {
+        for (typename EventsContainer::iterator it = events->begin(); it != events->end(); ++it)
             if ((*it)->name==name) return *it;
         return 0;
     }
 
 public:
+    typedef std::list<E*> SpecificEventsContainer;
+
     bool isEventHere(const QString& name) {
         return findEvent(name)!=0;
     }
-
-    E& getEvent(const QString& name) {
-        E& toSend = *findEvent(name);
+    Event* getEvent(const QString &name) {
+        Event* toSend = findEvent(name);
         if (!toSend) throw CalendarException("Error : event "+name+" not found");
         return toSend;
     }
+
+    E* getSpecificEvent(const QString& name) {
+        E* toSend = dynamic_cast<E*>(findEvent(name));
+        if (!toSend) throw CalendarException("Error : event doesn't belong to the specific type you asked");
+        return toSend;
+    }
+
     void removeEvent(const QString& name) {
         Event* toDelete = findEvent(name);
-        for (typename EventsContainer::iterator it = events.begin(); it != events.end(); ++it) {
+        for (typename EventsContainer::iterator it = events->begin(); it != events->end(); ++it) {
             if (*it==toDelete) {
                 delete toDelete;
-                events.erase(it);
-                for (typename SimpleEventsContainer::iterator it2 = globalEvents->begin(); it2!=globalEvents->end(); ++it2) {
-                    if (*it2==*it) {
-                        globalEvents->erase(it2);
-                        return;
-                    }
-                }
+                events->erase(it);
                 return;
             }
         }
@@ -123,43 +127,59 @@ public:
     }
     virtual void achieveEvent(const QString& name) = 0;
 
-    SimpleEventsContainer getEventsByDate(const QDate& d) {
+    EventsContainer getEventsByDate(const QDate& d) {
         EventsContainer toSend = EventsContainer();
-        for (typename SimpleEventsContainer::iterator it = globalEvents->begin(); it!=globalEvents->end(); ++it)
+        for (typename EventsContainer::iterator it = events->begin(); it!=events->end(); ++it)
             if ((*it)->getDate() == d) toSend.push_back(*it);
         return toSend;
     }
     Event* getEventByDateAndTime(const QDate& d, const QTime& t) {
         Event* toSend = 0;
-        for (typename SimpleEventsContainer::iterator it = globalEvents->begin(); it!=globalEvents->end(); ++it) {
+        for (typename EventsContainer::iterator it = events->begin(); it!=events->end(); ++it) {
             if ((*it)->getDate()==d && (*it)->getTime()==t) toSend =*it;
             return toSend;
         }
     }
 
-    EventsContainer getSpecificEventsByDate(const QDate& d) {
-        EventsContainer toSend = EventsContainer();
-        for (typename EventsContainer::iterator it = events.begin(); it!=events.end(); ++it)
-            if ((*it)->getDate() == d) toSend.push_back(*it);
+    SpecificEventsContainer getSpecificEventsByDate(const QDate& d) {
+        SpecificEventsContainer toSend = SpecificEventsContainer();
+        for (Iterator<E> it = getIterator<E>(); !(it.isDone()); it.next())
+            if (it.current().getDate() == d) toSend.push_back(&it.current);
         return toSend;
     }
     E* getSpecificEventByDateAndTime(const QDate& d, const QTime& t) {
         E* toSend = 0;
-        for (typename EventsContainer::iterator it = events.begin(); it!=events.end(); ++it) {
-            if ((*it)->getDate()==d && (*it)->getTime()==t) {
-                toSend=*it;
+        for (Iterator<E> it = getIterator<E>(); !(it.isDone()); it.next()) {
+            if (it.current().getDate()==d && it.current().getTime()==t) {
+                toSend=&it.current();
                 break;
             }
         }
         return toSend;
     }
 
+    EventsContainer getEventsInTimeZone(const QDate& d, const QTime& t, const Duration& du) {
+        EventsContainer toSend = EventsContainer();
+        QTime endT, endE;
+        for (EventsContainer::iterator it=events->begin(); it!=events->end(); ++it) {
+            Event* event = *it;
+            endE = event->getDuration()+event->getTime();
+            endT = du+t;
+            if (!endT.isValid()) endT = QTime(23,59,59);
+            if (event->getDate()==d &&
+                ((event->getTime()>=t && event->getTime()<endT) ||
+                (endE>t && endE<endT) || (event->getTime()<=t && endE>=endT))) {
+                toSend.push_back(*it);
+            }
+        }
+        return toSend;
+    }
 
     bool isTimeZoneFree(const QDate& d, const QTime& t, const Duration& du) {
         Event* temp = 0;
-        for (typename SimpleEventsContainer::iterator it = globalEvents->begin(); it!=globalEvents->end(); ++it) {
+        for (typename EventsContainer::iterator it = events->begin(); it!=events->end(); ++it) {
             temp = *it;
-            QTime max = QTime(t.hour()+du.getHours(),t.minute()+du.getMinutes());
+            QTime max = du+t;
             if (temp->getDate()==d && temp->getTime()>=t && temp->getTime()<=max)
                 return false;
         }

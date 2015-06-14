@@ -78,13 +78,18 @@ int main(int argc, char *argv[]) {
         //tempop.addSubTask(compo);
         tempop.addSubTask(ct1);
         pro1.addTask(tempop);
+        cp->addTask("blabla","blobloblo",Duration(1,30),QDate(2000,6,2),QDate(2100,2,4));
+        pro1.addTask(cnp->getTypedTask("blabla"));
+        ActivityFactory* actF = &(ActivityFactory::getInstance());
         ProgrammationFactory* progF = &(ProgrammationFactory::getInstance());
-        progF->scheduleTask(&prem2,"initialisation de la tache",QDate(2019,12,2),QTime(12,00),Duration(2,30),"Compy City");
-        progF->scheduleTask(&prem3,"terminaison de la tache",QDate(2023,12,2),QTime(12,00),Duration(2,30),"Compy City");
+        progF->scheduleTask(&prem2,"initialisation de la tache",QDate(2015,6,13),QTime(12,00),Duration(1,30),"Compy City");
+        actF->addActivity(QString("testons ca"),QDate(2015,6,13),QTime(14,30),Duration(0,30),QString("Compy City"),getActivityType("meeting"),QStringList());
+        progF->scheduleTask(&prem3,"terminaison de la tache",QDate(2023,12,2),QTime(12,00),Duration(1,30),"Compy City");
         qDebug()<<progF->getSpecificEventByDateAndTime(QDate(2023,12,2),QTime(12,00))->getTask()->getId();
+        //progF->scheduleTask(&(cnp->getTypedTask("blabla")),"rgeklg,e",QDate(2015,6,8),QTime(12,00),Duration(1,30),"Compy City");
         progF->achieveEvent("initialisation de la tache");
-
-/*    }
+        //progF->achieveEvent("rgeklg,e");
+    /*}
 catch (CalendarException e) {
         qDebug()<<e.getInfo();
     }*/
@@ -93,5 +98,5 @@ catch (CalendarException e) {
     wid.show();
 
     return app.exec();
-    //   return 0;
+      //return 0;
 }

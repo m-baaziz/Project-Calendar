@@ -11,7 +11,12 @@ SOURCES += \
     main.cpp \
     Association.cpp \
     TaskManager.cpp \
-    GUI-Architecture.cpp
+    GUI-Architecture.cpp \
+    GUI-Calendar.cpp \
+    GUI-Project.cpp \
+    GUI-Task.cpp \
+    GUI-Association.cpp \
+    GUI-Event.cpp
 
 HEADERS += \
     Calendar.h \
@@ -23,4 +28,9 @@ HEADERS += \
     Singleton.h \
     Iterator.h \
     TaskManager.h \
-    GUI-Architecture.h
+    GUI-Architecture.h \
+    GUI-Calendar.h \
+    GUI-Project.h \
+    GUI-Task.h \
+    GUI-Association.h \
+    GUI-Event.h

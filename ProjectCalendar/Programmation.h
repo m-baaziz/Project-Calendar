@@ -18,10 +18,13 @@ class Programmation : public Event {
     friend class ProgrammationFactory;
 public:
     UnitaryTask* getTask() {return task;}
+    const UnitaryTask* getTask() const {return task;}
+    EventType getEventType() const override {return PROGRAMMATION;}
 
     void setDate(const QDate& da) {date = da;}
     void setDuration(const Duration& du) {duration = du;}
 };
+
 
 class ProgrammationFactory : public EventFactory<Programmation,ProgrammationFactory> {
     ProgrammationFactory(const ProgrammationFactory& pf);
@@ -56,7 +59,7 @@ public:
      * \return
      * Method that returns every programmations of a preemptive task.
      */
-    EventsContainer getProgrammations(UnitaryTask* t);
+    SpecificEventsContainer getProgrammations(UnitaryTask* t);
     /*!
      * \brief getProgrammations
      * \param t
@@ -64,7 +67,7 @@ public:
      * \return
      * Method that returns every programmations of a preemptive task in a given date.
      */
-    EventsContainer getProgrammations(UnitaryTask *t, const QDate& d);
+    SpecificEventsContainer getProgrammations(UnitaryTask *t, const QDate& d);
     /*!
      * \brief getTaskToSchedule
      * \param t

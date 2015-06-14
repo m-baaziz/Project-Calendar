@@ -4,7 +4,7 @@
 template<>
 Handler<ActivityFactory> Singleton<ActivityFactory>::handler = Handler<ActivityFactory>();
 
-SimpleEventsContainer* EventsArray::globalEvents = new SimpleEventsContainer();
+EventsContainer* EventsArray::globalEvents = new EventsContainer();
 
 
 ActivityType getActivityType(const QString &type) {
@@ -38,16 +38,19 @@ void Event::registerParticipant(const QString &username) {
 }
 
 Activity& ActivityFactory::addActivity(const QString &n, const QDate &d, const QTime& ti,const Duration& du, const QString &p, const ActivityType &t, const ParticipantsContainer &par) {
+    Duration tempDu = du;
+    if (!(du+ti).isValid()) tempDu = Duration(du.getDurationInMinutes()-1);
     if (n.size()==0 || p.size()==0) throw CalendarException("Error : Invalid parameters");
     if (isEventHere(n)) throw CalendarException("Error : Activity "+n+" has already been added");
+    if (du.getDurationInHours()>12) throw CalendarException("Error : a single programmation can't last for more than 12 hours");
+    if (tempDu+ti<ti) throw CalendarException("Error : a single event can not happen in two different days, pleas schedule two differents events");
     if (!isTimeZoneFree(d,ti,du)) throw CalendarException("Error : Time zone not available");
-    Activity* newActivity = new Activity(n,d,ti,du,p,t,par);
-    events.push_back(newActivity);
-    globalEvents->push_back(newActivity);
+    Activity* newActivity = new Activity(n,d,ti,tempDu,p,t,par);
+    events->push_back(newActivity);
     return *newActivity;
 }
 
 void ActivityFactory::achieveEvent(const QString &name) {
-    Activity* toAchieve = findEvent(name);
+    Activity* toAchieve = getSpecificEvent(name);
     toAchieve->setToAchieved();
 }

@@ -1,5 +1,15 @@
 #ifndef PROJECT_H
 #define PROJECT_H
+#include <QMenu>
+#include <QGraphicsTextItem>
+#include <QGraphicsRectItem>
+#include <QPainter>
+#include <QRegion>
+#include <QRect>
+#include <QPen>
+#include <QPolygon>
+#include <math.h>
+
 #include "Task.h"
 #include "Singleton.h"
 

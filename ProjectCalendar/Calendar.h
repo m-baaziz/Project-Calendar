@@ -6,6 +6,7 @@
 #include <QTextStream>
 #include <QDebug>
 #include <queue>
+#include <QTime>
 
 /*!
  *\file Calendar.h
@@ -43,7 +44,7 @@ public:
      * \param nb number of minutes >=0, can't be >= 60
      */
     Duration(const unsigned int& nb=0) : minutes(nb){
-        if (nb>59) throw CalendarException("Error : Invalid minutes values");
+        //if (nb>59) throw CalendarException("Error : Invalid minutes values");
     }
     /*!
      * \brief Duration constructor 2
@@ -88,13 +89,23 @@ public:
     Duration operator+(const Duration& d) {
         return Duration(getHours()+d.getHours()+(getMinutes()+d.getMinutes())/60,(getMinutes()+d.getMinutes())%60);
     }
-    bool operator>(const Duration& d) {
+    QTime operator+(const QTime& t) const {
+        return QTime(t.hour()+getHours(),t.minute()+getMinutes());
+    }
+
+    bool operator>(const Duration& d) const {
         return minutes>d.getDurationInMinutes();
     }
-    bool operator<(const Duration& d) {
+    bool operator<(const Duration& d) const {
         return minutes<d.getDurationInMinutes();
     }
-    QString toString() {
+    bool operator!=(const Duration& d) const {
+        return getDurationInMinutes()!=d.getDurationInMinutes();
+    }
+    bool operator==(const Duration& d) const {
+        return getDurationInMinutes()==d.getDurationInMinutes();
+    }
+    QString toString() const {
         unsigned int H = getHours();
         unsigned int M = getMinutes();
         QString h = (H<10)?"0"+QString::number(H):""+QString::number(H);
