@@ -3,6 +3,8 @@
 #include <iostream>
 #include <QString>
 #include <QDate>
+#include <QFile>
+#include <QXmlStreamWriter>
 #include <QTextStream>
 #include <QDebug>
 #include <queue>

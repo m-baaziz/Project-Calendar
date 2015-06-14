@@ -29,7 +29,7 @@ protected:
 
     TaskFactory():file(""),tasks(TasksArray::tasks),Aggregator<Task>(TasksArray::tasks){TasksArray::nbFactories ++;}
     virtual ~TaskFactory() {
-        //if (file!="") this->save(file);
+        if (file!="") this->save(file);
         TasksArray::nbFactories --;  // reminder : TasksArray::nbFactories is a static variable
         if (TasksArray::nbFactories==0) {
             while(!(tasks->empty())) removeTask(tasks->front());
@@ -125,7 +125,33 @@ public:
 
     bool isTaskHere(const QString& id) const {return findTask(id) != 0;}
     void load(const QString& f);
-    void save(const QString& f);
+
+    void save(const QString& f) {
+        /*file = f;
+        QFile newfile(file);
+        if (!newfile.open(QIODevice::WriteOnly | QIODevice::Text))
+            throw CalendarException("Error : Can't open the file "+file+" pleas make sure that this file is not open");
+        QXmlStreamWriter stream(&newfile);
+        stream.setAutoFormatting(true);
+        stream.writeStartDocument();
+        stream.writeStartElement("Tasks");
+            stream.writeStartElement("Composite");
+            for (Iterator<CompositeTask> it=getIterator<CompositeTask>(); !it.isDone(); it.next()) {
+                stream.writeStartElement("Task");
+                stream.writeTextElement("identifier",);
+                stream.writeTextElement("title",);
+                stream.writeTextElement("duration",);
+                stream.writeTextElement("disponibility",);
+                stream.writeTextElement("deadline",);
+                stream.writeTextElement("isCompleted",);
+                stream.writeEndElement();
+            }
+            stream.writeEndElement();
+        stream.writeEndElement();
+        stream.writeEndDocument();
+        newfile.close();*/
+    }
+
     void removeTask(Task* t) {
         for (TasksContainer::iterator it = tasks->begin(); it!=tasks->end(); ++it) {
             if (t && *it==t) {
