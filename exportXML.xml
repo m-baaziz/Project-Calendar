@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ProjectCalendar>
+    <Tasks>
+        <Unitary>
+            <Task>
+                <identifier>t3</identifier>
+                <title>tache3</title>
+                <duration>01 H 00</duration>
+                <disponibility>sam. janv. 1 2000</disponibility>
+                <deadline>mar. janv. 1 2002</deadline>
+                <isCompleted>true</isCompleted>
+                <preemptive>false</preemptive>
+            </Task>
+            <Task>
+                <identifier>t2</identifier>
+                <title>tache2</title>
+                <duration>02 H 00</duration>
+                <disponibility>sam. janv. 1 2000</disponibility>
+                <deadline>sam. janv. 1 2005</deadline>
+                <isCompleted>false</isCompleted>
+                <preemptive>true</preemptive>
+            </Task>
+            <Task>
+                <identifier>zdad</identifier>
+                <title>zefez</title>
+                <duration>02 H 00</duration>
+                <disponibility>sam. janv. 1 2000</disponibility>
+                <deadline>lun. janv. 1 2001</deadline>
+                <isCompleted>false</isCompleted>
+                <preemptive>true</preemptive>
+            </Task>
+            <Task>
+                <identifier>SI28</identifier>
+                <title>Ecriture multimedia</title>
+                <duration>01 H 30</duration>
+                <disponibility>mar. févr. 12 2013</disponibility>
+                <deadline>sam. mai 6 2045</deadline>
+                <isCompleted>false</isCompleted>
+                <preemptive>true</preemptive>
+            </Task>
+            <Task>
+                <identifier>TEST</identifier>
+                <title>Ecriture TEST</title>
+                <duration>01 H 30</duration>
+                <disponibility>mar. févr. 12 2013</disponibility>
+                <deadline>sam. mai 6 2045</deadline>
+                <isCompleted>true</isCompleted>
+                <preemptive>false</preemptive>
+            </Task>
+            <Task>
+                <identifier>TesTYY</identifier>
+                <title>TESTERRDZDZD</title>
+                <duration>01 H 30</duration>
+                <disponibility>mar. févr. 12 2013</disponibility>
+                <deadline>sam. mai 6 2045</deadline>
+                <isCompleted>false</isCompleted>
+                <preemptive>false</preemptive>
+            </Task>
+            <Task>
+                <identifier>BADEU</identifier>
+                <title>Trop Gros chiffre</title>
+                <duration>01 H 30</duration>
+                <disponibility>mar. févr. 12 2013</disponibility>
+                <deadline>sam. mai 6 2045</deadline>
+                <isCompleted>false</isCompleted>
+                <preemptive>true</preemptive>
+            </Task>
+            <Task>
+                <identifier>LG62</identifier>
+                <title>Chinois niveau 2</title>
+                <duration>01 H 30</duration>
+                <disponibility>mar. févr. 12 2013</disponibility>
+                <deadline>sam. mai 6 2045</deadline>
+                <isCompleted>false</isCompleted>
+                <preemptive>false</preemptive>
+            </Task>
+            <Task>
+                <identifier>blabla</identifier>
+                <title>blobloblo</title>
+                <duration>01 H 30</duration>
+                <disponibility>ven. juin 2 2000</disponibility>
+                <deadline>jeu. févr. 4 2100</deadline>
+                <isCompleted>false</isCompleted>
+                <preemptive>true</preemptive>
+            </Task>
+            <Task>
+                <identifier>aaoooll</identifier>
+                <title>auchan</title>
+                <duration>02 H 00</duration>
+                <disponibility>ven. janv. 1 2010</disponibility>
+                <deadline>mar. janv. 1 2013</deadline>
+                <isCompleted>true</isCompleted>
+                <preemptive>false</preemptive>
+            </Task>
+        </Unitary>
+        <Composite>
+            <Task>
+                <identifier>t1</identifier>
+                <title>tache1</title>
+                <duration>02 H 00</duration>
+                <disponibility>sam. janv. 1 2000</disponibility>
+                <deadline>mer. janv. 1 2020</deadline>
+                <isCompleted>false</isCompleted>
+                <subtasks>
+                    <identifier>t2</identifier>
+                </subtasks>
+            </Task>
+            <Task>
+                <identifier>LO21</identifier>
+                <title>Programmation Objet</title>
+                <duration>04 H 30</duration>
+                <disponibility>mar. mars 15 2011</disponibility>
+                <deadline>dim. févr. 13 2050</deadline>
+                <isCompleted>false</isCompleted>
+                <subtasks>
+                    <identifier>SI28</identifier>
+                    <identifier>TesTYY</identifier>
+                    <identifier>LG62</identifier>
+                </subtasks>
+            </Task>
+            <Task>
+                <identifier>RO03</identifier>
+                <title>Recherche Operationnelle</title>
+                <duration>03 H 00</duration>
+                <disponibility>mar. févr. 12 2013</disponibility>
+                <deadline>sam. mai 6 2045</deadline>
+                <isCompleted>false</isCompleted>
+                <subtasks>
+                    <identifier>BADEU</identifier>
+                    <identifier>TEST</identifier>
+                </subtasks>
+            </Task>
+            <Task>
+                <identifier>NF17</identifier>
+                <title>Conception base de donnee</title>
+                <duration>01 H 30</duration>
+                <disponibility>mar. févr. 12 2013</disponibility>
+                <deadline>sam. mai 6 2045</deadline>
+                <isCompleted>false</isCompleted>
+                <subtasks/>
+            </Task>
+            <Task>
+                <identifier>zedzed</identifier>
+                <title>dzed</title>
+                <duration>03 H 00</duration>
+                <disponibility>lun. janv. 1 1940</disponibility>
+                <deadline>dim. févr. 2 2200</deadline>
+                <isCompleted>false</isCompleted>
+                <subtasks>
+                    <identifier>RO03</identifier>
+                </subtasks>
+            </Task>
+        </Composite>
+    </Tasks>
+    <Projects>
+        <Project>
+            <identifier>Calendar</identifier>
+            <title>Project Agenda Calendar</title>
+            <duration>14 H 30</duration>
+            <disponibility>lun. févr. 12 1900</disponibility>
+            <deadline>jeu. mai 6 2500</deadline>
+            <isCompleted>false</isCompleted>
+            <Tasks>
+                <identifier>t1</identifier>
+                <identifier>zdad</identifier>
+                <identifier>LO21</identifier>
+                <identifier>NF17</identifier>
+                <identifier>zedzed</identifier>
+                <identifier>blabla</identifier>
+            </Tasks>
+        </Project>
+        <Project>
+            <identifier>comple</identifier>
+            <title>est il complet</title>
+            <duration>02 H 00</duration>
+            <disponibility>ven. janv. 1 1915</disponibility>
+            <deadline>mar. juin 3 2200</deadline>
+            <isCompleted>true</isCompleted>
+            <Tasks>
+                <identifier>aaoooll</identifier>
+            </Tasks>
+        </Project>
+        <Project>
+            <identifier>proj1</identifier>
+            <title>projet1</title>
+            <duration>01 H 00</duration>
+            <disponibility>sam. janv. 1 2000</disponibility>
+            <deadline>ven. janv. 1 2010</deadline>
+            <isCompleted>true</isCompleted>
+            <Tasks>
+                <identifier>t3</identifier>
+            </Tasks>
+        </Project>
+    </Projects>
+    <Associations>
+        <Association>
+            <predecessor>LG62</predecessor>
+            <successor>LO21</successor>
+        </Association>
+        <Association>
+            <predecessor>TesTYY</predecessor>
+            <successor>LO21</successor>
+        </Association>
+        <Association>
+            <predecessor>SI28</predecessor>
+            <successor>LO21</successor>
+        </Association>
+        <Association>
+            <predecessor>TEST</predecessor>
+            <successor>RO03</successor>
+        </Association>
+        <Association>
+            <predecessor>BADEU</predecessor>
+            <successor>RO03</successor>
+        </Association>
+        <Association>
+            <predecessor>RO03</predecessor>
+            <successor>zedzed</successor>
+        </Association>
+        <Association>
+            <predecessor>t2</predecessor>
+            <successor>t1</successor>
+        </Association>
+        <Association>
+            <predecessor>t1</predecessor>
+            <successor>zdad</successor>
+        </Association>
+    </Associations>
+    <Events>
+        <Activities>
+            <Activity>
+                <name>testons ca</name>
+                <date>sam. juin 13 2015</date>
+                <time>14:30:00</time>
+                <duration>00 H 29</duration>
+                <place>Compy City</place>
+                <participants></participants>
+                <achieved>false</achieved>
+                <type>meeting</type>
+            </Activity>
+        </Activities>
+        <Programmations>
+            <Programmation>
+                <name>prog de T3</name>
+                <date>ven. févr. 2 2001</date>
+                <time>12:00:00</time>
+                <duration>01 H 00</duration>
+                <place>paris</place>
+                <participants>moi,lui</participants>
+                <achieved>true</achieved>
+                <task>t3</task>
+            </Programmation>
+            <Programmation>
+                <name>initialisation de la tache</name>
+                <date>sam. juin 13 2015</date>
+                <time>12:00:00</time>
+                <duration>01 H 30</duration>
+                <place>Compy City</place>
+                <participants></participants>
+                <achieved>true</achieved>
+                <task>TEST</task>
+            </Programmation>
+            <Programmation>
+                <name>terminaison de la tache</name>
+                <date>sam. déc. 2 2023</date>
+                <time>12:00:00</time>
+                <duration>01 H 30</duration>
+                <place>Compy City</place>
+                <participants></participants>
+                <achieved>false</achieved>
+                <task>TesTYY</task>
+            </Programmation>
+            <Programmation>
+                <name>a compl</name>
+                <date>dim. janv. 1 2012</date>
+                <time>01:01:00</time>
+                <duration>02 H 00</duration>
+                <place>paris</place>
+                <participants></participants>
+                <achieved>true</achieved>
+                <task>aaoooll</task>
+            </Programmation>
+        </Programmations>
+    </Events>
+</ProjectCalendar>
