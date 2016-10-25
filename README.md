@@ -1,5 +1,5 @@
 # Project-Calendar
-1st Year University project (C++ programming)
+University project (C++ programming)
 
 A Desktop Project Management application, featuring :
   - a Qt front-end
