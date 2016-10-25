@@ -9,4 +9,4 @@ A Desktop Project Management application, featuring :
   
 ## Demo
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/QZPC9VfbaOY" frameborder="0" allowfullscreen></iframe>
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=QZPC9VfbaOY" target="_blank"><img src="http://img.youtube.com/vi/QZPC9VfbaOY/0.jpg" alt="Demo Video" width="240" height="180" border="10" /></a>
